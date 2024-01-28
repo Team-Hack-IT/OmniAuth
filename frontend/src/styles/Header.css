@@ -1,0 +1,32 @@
+
+header {
+    display: flex;
+    background-color: #b7c3bb;
+    align-items: center;
+    justify-content:space-between;
+    height: 40px;
+    padding: 0 20px;
+}
+
+h1 {
+    text-decoration: none;
+    color: #ffffff;
+    font-size: 18px;
+    padding: 3px;
+    font-family: 'OCR A Std', monospace;
+}
+
+.menu{
+    display: flex;
+    align-items: center;
+    justify-content:space-between; 
+    gap: 8 px;
+}
+
+.menu a {
+    text-decoration: none;
+    color: #040404;
+    font-size: 12px;
+    padding: 6px;
+    font-family: 'OCR A Std', monospace;
+}

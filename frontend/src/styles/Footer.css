@@ -1,0 +1,14 @@
+footer a {
+    text-decoration: none;
+    color: #fcfbfb;
+    font-size: 8px;
+    padding: 6px;
+    font-family: 'OCR A Std', monospace;
+}
+
+footer {
+    background-color: #0a4e50;
+    display:flex;
+    justify-content: space-between;
+    padding:40px;
+}

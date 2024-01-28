@@ -1,0 +1,54 @@
+
+
+h3 {
+    text-align: center;
+    color: #0e4e52;
+    font-size: 18px;
+    padding: 3px;
+    font-family: 'OCR A Std', monospace;
+}
+
+
+h4 {
+    text-align: center;
+    color: #0e4e52;
+    font-size: 8px;
+    padding: 3px;
+    font-family: 'OCR A Std', monospace;
+}
+
+h5 {
+    text-align: left;
+    color: #0e4e52;
+    font-size: 18px;
+    padding: 3px;
+    font-family: 'OCR A Std', monospace;
+}
+
+
+h6 {
+    text-align: left;
+    color: #0e4e52;
+    font-size: 8px;
+    padding: 3px;
+    font-family: 'OCR A Std', monospace;
+}
+
+.FeatureBox {
+    display: flex;
+    justify-content:space-between;
+    flex-direction:row;
+    padding: 40px;
+    height:200px;
+}
+
+.FeatureBox_txt {
+    display: flex;
+    flex-direction:column;
+    width: 250px;
+}
+
+.FeatureBox_txt {
+    display: flex;
+    flex-direction: column;
+}
