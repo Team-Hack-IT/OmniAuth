@@ -1,5 +1,6 @@
 import React from 'react';
-import "../styles/Header.css"
+import "../styles/Header.css";
+
 
 const Header = () => {
     return (
@@ -15,9 +16,7 @@ const Header = () => {
                 <a href="#">About Us</a> 
             </div>
 
-            <div className='GetStartedButton'>
-                <a href="#">Get Started</a>
-            </div> 
+            <button>Get Started</button>
 
         </header>
     );

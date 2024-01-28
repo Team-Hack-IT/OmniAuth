@@ -1,7 +1,7 @@
 
 header {
     display: flex;
-    background-color: #b7c3bb;
+    background-color: #bcd8db;
     align-items: center;
     justify-content:space-between;
     height: 40px;
@@ -20,13 +20,22 @@ h1 {
     display: flex;
     align-items: center;
     justify-content:space-between; 
-    gap: 8 px;
+    gap: 12 px;
 }
 
 .menu a {
     text-decoration: none;
     color: #040404;
     font-size: 12px;
-    padding: 6px;
+    padding: 12px;
     font-family: 'OCR A Std', monospace;
+}
+
+button {
+    background-color: #00C49A;
+    color: white;
+    padding: 5px 10px;
+    border: none;
+    border-radius: 8px;
+    cursor: pointer;
 }
