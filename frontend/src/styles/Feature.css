@@ -2,36 +2,47 @@
 
 h3 {
     text-align: center;
-    color: #0e4e52;
-    font-size: 18px;
-    padding: 3px;
-    font-family: 'OCR A Std', monospace;
+    color: #156064;
+    font-family: 'Inter';
+    font-size: 30px;
+    font-style: normal;
+    font-weight: 600;
+    line-height: normal;
+    margin-bottom: 20px;
 }
 
 
 h4 {
     text-align: center;
-    color: #0e4e52;
-    font-size: 9px;
-    padding: 3px;
-    font-family: 'OCR A Std', monospace;
+    color: rgba(21, 96, 100, 0.70);
+    text-align: center;
+    font-family: 'Inter';
+    font-size: 15px;
+    font-style: normal;
+    font-weight: 500;
+    line-height: normal;
 }
 
 h5 {
     text-align: left;
-    color: #0e4e52;
-    font-size: 18px;
-    padding: 3px;
-    font-family: 'OCR A Std', monospace;
+    color: #156064;
+    font-family: 'Inter';
+    font-size: 30px;
+    font-style: normal;
+    font-weight: 600;
+    line-height: normal;
+    margin-bottom: -10px;
 }
 
 
 h6 {
     text-align: left;
-    color: #0e4e52;
-    font-size: 8px;
-    padding: 3px;
-    font-family: 'OCR A Std', monospace;
+    color: rgba(0, 0, 0, 0.70);
+    font-family: 'Inter';
+    font-size: 12px;
+    font-style: normal;
+    font-weight: 500;
+    line-height: normal;
 }
 
 .FeatureBox {
@@ -39,16 +50,18 @@ h6 {
     justify-content:space-between;
     flex-direction:row;
     padding: 40px;
-    height:200px;
+    height:300px;
 }
 
 .FeatureBox_txt {
     display: flex;
     flex-direction:column;
     width: 250px;
+    vertical-align: middle;
 }
 
-.FeatureBox_txt {
+
+.FeatureBox_img {
     display: flex;
-    flex-direction: column;
+    height: 100%;
 }

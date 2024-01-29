@@ -1,41 +1,77 @@
 
 header {
     display: flex;
-    background-color: #bcd8db;
+    background-color: rgba(21, 96, 100, 0.14);
     align-items: center;
     justify-content:space-between;
-    height: 40px;
+    height: 70px;
+    flex-shrink: 0;
     padding: 0 20px;
+}
+
+.logo {
+    display: flex;
+    height: 100%;
+    align-items: center;
+}
+
+.logo img{
+    display: flex;
+    height: 40%;
 }
 
 h1 {
     text-decoration: none;
-    color: #ffffff;
-    font-size: 18px;
-    padding: 3px;
-    font-family: 'OCR A Std', monospace;
+    color: #156064;
+    font-family: 'Inter';
+    font-size: 20px;
+    font-style: normal;
+    font-weight: 600;
+    line-height: normal;
+}
+
+.logo p {
+    color: rgba(0, 0, 0, 0.90);
+    font-family: 'Inter';
+    font-size: 20px;
+    font-style: normal;
+    font-weight: 600;
+    line-height: normal;
 }
 
 .menu{
     display: flex;
     align-items: center;
     justify-content:space-between; 
-    gap: 12 px;
 }
 
 .menu a {
     text-decoration: none;
-    color: #040404;
-    font-size: 12px;
-    padding: 12px;
-    font-family: 'OCR A Std', monospace;
+    display: flex;
+    width: 120px;
+    height: 37.122px;
+    flex-direction: column;
+    justify-content: center;
+    flex-shrink: 0;
+    color: rgba(0, 0, 0, 0.80);
+    font-family: 'Poppins', sans-serif;
+    font-size: 14px;
+    font-style: normal;
+    font-weight: 500;
+    line-height: normal;
 }
 
 button {
-    background-color: #00C49A;
-    color: white;
-    padding: 5px 10px;
-    border: none;
-    border-radius: 8px;
-    cursor: pointer;
+    display: flex;
+    width: 120px;
+    height: 40px;
+    padding: 16px 25px;
+    justify-content: center;
+    align-items: center;
+    gap: 12px;
+    flex-shrink: 0;
+    font-family: 'Poppins', sans-serif;
+    font-size: 30px;
+    border-radius: 15px;
+    background: #00C49A;
 }

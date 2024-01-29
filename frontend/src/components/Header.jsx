@@ -1,12 +1,15 @@
 import React from 'react';
 import "../styles/Header.css";
+import logo from "./logo.png";
 
 
 const Header = () => {
     return (
         <header>
             <div className='logo'>  
-                <h1>OmniAuth</h1>
+                <img src={logo} alt="logo"/>  
+                <h1>Omni</h1>
+                <p>Auth</p>
             </div>
 
             <div className='menu'>
