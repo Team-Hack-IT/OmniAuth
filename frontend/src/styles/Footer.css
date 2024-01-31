@@ -1,14 +1,16 @@
 footer a {
     text-decoration: none;
-    color: #fcfbfb;
-    font-size: 8px;
-    padding: 6px;
-    font-family: 'Poppins', sans-serif;
+    color: #DEE9E9;
+    font-family: Inter;
+    font-size: 14px;
+    font-style: normal;
+    font-weight: 200;
+    line-height: normal;
 }
 
 footer {
     background-color: #0a4e50;
     display:flex;
-    justify-content: space-between;
-    padding:40px;
+    justify-content: space-around;
+    padding:60px;
 }

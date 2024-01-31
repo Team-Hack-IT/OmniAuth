@@ -1,11 +1,11 @@
 
 .summary {
     display: flex;
-    justify-content:space-between;
+    justify-content:space-around;
     background-color: #156064;
     flex-direction: row;
     height: 300px;
-    padding: 20px 40px;
+    padding: 0px 40px 30px 0px;
     flex-shrink:0;
 }
 
@@ -20,7 +20,7 @@
 .summary_image {
     display: flex;
     height: 70%;
-    padding-top: 40px;
+    align-self:center;
 }
 
 

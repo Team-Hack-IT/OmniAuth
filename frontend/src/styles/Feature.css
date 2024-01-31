@@ -34,7 +34,6 @@ h5 {
     margin-bottom: -10px;
 }
 
-
 h6 {
     text-align: left;
     color: rgba(0, 0, 0, 0.70);
@@ -45,9 +44,30 @@ h6 {
     line-height: normal;
 }
 
+h7 {
+    text-align: right;
+    color: #156064;
+    font-family: 'Inter';
+    font-size: 30px;
+    font-style: normal;
+    font-weight: 600;
+    line-height: normal;
+    margin-bottom: 20px;
+}
+
+h8 {
+    text-align: right;
+    color: rgba(0, 0, 0, 0.70);
+    font-family: 'Inter';
+    font-size: 12px;
+    font-style: normal;
+    font-weight: 500;
+    line-height: normal;
+}
+
 .FeatureBox {
     display: flex;
-    justify-content:space-between;
+    justify-content:space-around;
     flex-direction:row;
     padding: 40px;
     height:300px;
