@@ -3,6 +3,7 @@ import "../styles/Header.css";
 import logo from "./logo.png";
 import { Link } from 'react-router-dom';
 import SignInPage from './SignInPage';
+import { AuthProvider } from '@descope/react-sdk';
 
 
 
@@ -21,11 +22,11 @@ function Header() {
                 <a href="#">Contact Us</a>
                 <a href="#">About Us</a>
             </div>
+            
 
             <Link to ="/signin">
                 <button>Get Started</button>
             </Link>
-
 
         </header>
     );
