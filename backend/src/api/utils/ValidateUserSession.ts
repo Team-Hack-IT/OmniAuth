@@ -1,18 +1,19 @@
 /**import DescopeClient from '@descope/node-sdk';
 
 try {
-    const descopeClient = DescopeClient({ projectId: 'P2bMT7le7rEj4uL9gVKZpK9Kd6Md' });
+    const descopeClient = DescopeClient({ projectId: process.env.PROJECT_ID || "None" });
 } catch (error) {
-    console.log("failed to initialize: " + error)
+    console.log("failed to initialize: " + error);
 }
 
 // Fetch session token from HTTP Authorization Header
-const sessionToken="xxxx"
+const sessionToken = req.headers.authorization;
 
 try {
-  const authInfo = await descopeSdk.validateSession(sessionToken);
-  console.log("Successfully validated user session:");
-  console.log(authInfo);
+    const authInfo = await descopeSdk.validateSession(sessionToken); // Use the descopeSdk module
+    console.log("Successfully validated user session:");
+    console.log(authInfo);
 } catch (error) {
   console.log ("Could not validate user session " + error);
-} **/
+}
+**/

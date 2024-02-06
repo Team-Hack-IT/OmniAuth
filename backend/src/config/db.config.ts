@@ -16,7 +16,7 @@ export async function connectDB(
     store.initialize();
 
     try {
-        await store.openSession().load("documents/1-A");
+        store.openSession();
         console.log("Connected to Database");
         return store;
     } catch (error) {
