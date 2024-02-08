@@ -1,3 +1,4 @@
 .env
-*.pfx
 node_modules/
+build/
+*.pfx
