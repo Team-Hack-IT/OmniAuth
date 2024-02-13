@@ -4,6 +4,7 @@ import App from './App.jsx';
 import './index.css';
 import { createBrowserRouter, RouterProvider } from "react-router-dom";
 import SignInPage from './components/SignInPage.jsx';
+import Solutions from './components/Solutions.jsx';
 import { AuthProvider } from '@descope/react-sdk';
 
 const router = createBrowserRouter([
@@ -15,6 +16,10 @@ const router = createBrowserRouter([
     path: "/signin",
     element: <SignInPage />,
   },
+  {
+    path:"/solutions",
+    element: <Solutions/>,
+  }
 ]);
 
 

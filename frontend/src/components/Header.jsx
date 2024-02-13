@@ -17,10 +17,12 @@ function Header() {
             </div>
 
             <div className='menu'>
-                <a href="#">Solutions</a>
+                <li><Link to="/solutions">Solutions</Link></li>
+                <li><Link to="/resources">Resources</Link></li>
+                <li><Link to="/about-us">About Us</Link></li>
+                {/* <a href="#">Solutions</a>
                 <a href="#">Resources</a>
-                <a href="#">Contact Us</a>
-                <a href="#">About Us</a>
+                <a href="#">About Us</a> */}
             </div>
             
 

@@ -1,0 +1,34 @@
+
+
+.solutions_title {
+    display: flex;
+    color: #156064;
+    font-family: 'Inter';
+    font-size: 28px;
+    font-weight: 600;
+    height: 160px;
+    justify-content: center;
+    padding-top: 100px;
+    background-color: #FFFFFF;
+}
+
+.FeatureBox {
+    display: flex;
+    justify-content:space-around;
+    flex-direction:row;
+    padding: 40px;
+    height:300px;
+}
+
+.FeatureBox_txt {
+    display: flex;
+    flex-direction:column;
+    width: 250px;
+    vertical-align: middle;
+}
+
+
+.FeatureBox_img {
+    display: flex;
+    height: 100%;
+}
