@@ -20,7 +20,8 @@ export async function connectDB(
         console.log("Connected to Database");
         return store;
     } catch (error) {
+        store.dispose();
         console.error("Error connecting to Database:", error);
-        throw error;
+        return Promise.reject(error);
     }
 }

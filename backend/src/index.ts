@@ -2,8 +2,8 @@ import express from "express";
 import cookieParser from "cookie-parser";
 import cors from "cors";
 import helmet from "helmet";
-import { authMiddleware } from "./api/middleware/AuthenticateUser";
-import userRoute from "./api/routes/UserRoute";
+import { sessionMiddleware } from "./api/middleware/ValidateUserSession";
+import AuthMiddleware from "./api/middleware/AuthenticateUser";
 
 const app = express();
 const port = process.env.PORT || 3000;
@@ -33,8 +33,11 @@ if (environment === "development") {
     app.use(cors());
 }
 
-app.use(authMiddleware);
-app.use("/", userRoute);
+app.use(AuthMiddleware);
+app.use((req, res) => {
+    res.status(404).json({ error: "Not Found" });
+});
+app.use(sessionMiddleware);
 
 app.listen(port, () => {
     console.log(`Server is running on port ${port}`);
