@@ -1,27 +1,34 @@
 import { DocumentStore } from "ravendb";
 import * as fs from "fs";
 
-export async function connectDB(
-    certPath: string,
-    dbUrl: string,
-    dbName: string = "Omni"
-): Promise<DocumentStore> {
-    const store = new DocumentStore(dbUrl, dbName);
-    const cert = fs.readFileSync(certPath);
+let store: DocumentStore | null = null;
 
-    store.authOptions = {
-        certificate: cert,
-        type: "pfx",
-    };
-    store.initialize();
+export async function connectDB(): Promise<DocumentStore> {
+    return new Promise((resolve, reject) => {
+        if (store) {
+            resolve(store);
+            return;
+        } else {
+            store = new DocumentStore(
+                process.env.DB_URL || "",
+                process.env.DB_NAME || "Omni"
+            );
+            const cert = fs.readFileSync(process.env.CERT_PATH || "");
 
-    try {
-        store.openSession();
-        console.log("Connected to Database");
-        return store;
-    } catch (error) {
-        store.dispose();
-        console.error("Error connecting to Database:", error);
-        return Promise.reject(error);
-    }
+            store.authOptions = {
+                certificate: cert,
+                type: "pfx",
+            };
+            store.initialize();
+
+            store.on("afterDispose", () => {
+                resolve(store!);
+            });
+            store.on("error", (err) => {
+                store?.dispose();
+                store = null;
+                reject(err);
+            });
+        }
+    });
 }
