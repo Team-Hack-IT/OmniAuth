@@ -1,62 +1,30 @@
 
 import './App.css'
-import { useCallback } from 'react'
 
-import { useDescope, useSession, useUser } from '@descope/react-sdk'
-import { Descope } from '@descope/react-sdk'
-import { getSessionToken } from '@descope/react-sdk';
-
+import { Routes, Route } from 'react-router-dom';
+import Login from './pages/login/Login';
+import Signup from './pages/signup/Signup';
+import Home from './components/Home';
+import Dashboard from './pages/dashboard/Dashboard';
+import { DataContext } from './context/FormContext';
+import IndividualOnboarding from './pages/onboarding/IndividualOnboarding';
+import Onboarding from './pages/onboarding/Onboarding';
 
 function App() {
- 
-  const { isAuthenticated, isSessionLoading } = useSession()
-  const { user, isUserLoading } = useUser()
-  const { logout } = useDescope()
 
-  const exampleFetchCall = async () => {
-    const sessionToken = getSessionToken();
-
-    // example fetch call with authentication header
-    fetch('your_application_server_url', {
-      headers: {
-        Accept: 'application/json',
-        Authorization: 'Bearer ' + sessionToken,
-      }
-    })
-  }
-
-  const handleLogout = useCallback(() => {
-    logout()
-  }, [logout])
 
   return (
-    <>
-     
-     <h1>Welcome to Omni Auth</h1>
-     {!isAuthenticated &&
-      (
-        <Descope
-          flowId="sign-up-or-in"
-          onSuccess={(e) => console.log(e.detail.user)}
-          onError={(e) => console.log('Could not log in!')}
-        />
-      )
-    }
+ 
+  <Routes>
+  <Route path="/signup" element={<Signup />} />
+    <Route path="/login" element={<Login />} />
+    <Route path="/dashboard" element={<Home><Dashboard /></Home>} />
+    <Route path="/onboarding" element={<Home><Onboarding /></Home>} />
+    <Route path="/individual-onboarding" element={<Home><IndividualOnboarding /></Home>} />
 
-    {
-      (isSessionLoading || isUserLoading) && <p>Loading...</p>
-    }
+    
+  </Routes>
 
-    {!isUserLoading && isAuthenticated &&
-      (
-        <>
-          <p>Hello {user.name}</p>
-          <div>My Private Component</div>
-          <button onClick={handleLogout}>Logout</button>
-        </>
-      )
-    }
-    </>
   )
 }
 

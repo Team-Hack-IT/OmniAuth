@@ -1,0 +1,24 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+body, html {
+    height: 100%;
+    margin: 0 auto;
+    padding: 0;
+    box-sizing: border-box;
+    /* max-width: 1440px; */
+    overflow-x: hidden;
+}
+
+
+@layer components {
+    .form-control input,
+    .form-control textarea {
+      @apply p-2.5 placeholder:text-gray-500 w-full focus:outline-none rounded md:text-sm ring-2 border mb-1 ring-gray-50 focus:ring-primary/40;
+    }
+    .form-control .error {
+      @apply mt-1 text-sm text-red-400;
+    }
+   
+}
