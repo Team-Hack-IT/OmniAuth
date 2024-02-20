@@ -13,7 +13,7 @@ export async function UserMiddleware(
             if (req.subject) {
                 const user = await store.openSession().load<User>(req.subject);
                 if (user) {
-                    req.user.profile = user;
+                    req.user = user;
                     next();
                 } else {
                     res.status(404).json({ error: "User Not Found" });

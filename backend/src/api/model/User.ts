@@ -1,10 +1,14 @@
 interface User {
     userId: string;
+    firstname: string;
+    lastname: string;
     email: string;
     password?: string | number;
+    phone?: string;
     role?: string;
     createdAt?: Date;
     updatedAt?: Date;
+    history?: object;
 }
 
 export default User;

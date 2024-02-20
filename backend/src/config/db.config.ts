@@ -6,6 +6,11 @@ dotenv.config();
 
 let store: DocumentStore | null = null;
 
+/**
+ * Connects to the database and returns a Promise that resolves to a DocumentStore instance.
+ * If a DocumentStore instance already exists, it will be returned without creating a new one.
+ * @returns A Promise that resolves to a DocumentStore instance.
+ */
 export async function connectDB(): Promise<DocumentStore> {
     return new Promise((resolve, reject) => {
         if (store) {

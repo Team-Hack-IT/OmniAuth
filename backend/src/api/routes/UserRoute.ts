@@ -5,8 +5,10 @@ import {
     profile,
     updatePassword,
     createUser,
+    updateUser,
     deleteUser,
     updateEmail,
+    verifyPhone
 } from "../controller/UserController";
 import RequestWithUser from "../../types/request";
 import { UserMiddleware } from "../middleware/UserMiddleware";
@@ -38,6 +40,12 @@ router.post("/updateemail", (req: Request, res: Response) =>
 );
 router.delete("/delete", (req: Request, res: Response) =>
     deleteUser(req as RequestWithUser, res)
+);
+router.post("/update", (req: Request, res: Response) =>
+    updateUser(req as RequestWithUser, res)
+);
+router.post("/verifyphone", (req: Request, res: Response) =>
+    verifyPhone(req as RequestWithUser, res)
 );
 
 export default router;

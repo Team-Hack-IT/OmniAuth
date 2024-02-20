@@ -3,6 +3,10 @@ import dotenv from "dotenv";
 
 dotenv.config();
 
+/**
+ * Connects to Descope and returns a DescopeClient instance.
+ * @returns {DescopeClient | null} The DescopeClient instance if connected successfully, otherwise null.
+ */
 function connectDescope() {
     try {
         return DescopeClient({
