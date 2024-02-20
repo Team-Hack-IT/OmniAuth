@@ -1,5 +1,8 @@
 import { DocumentStore } from "ravendb";
 import * as fs from "fs";
+import dotenv from "dotenv";
+
+dotenv.config();
 
 let store: DocumentStore | null = null;
 
@@ -21,14 +24,14 @@ export async function connectDB(): Promise<DocumentStore> {
             };
             store.initialize();
 
-            store.on("afterDispose", () => {
-                resolve(store!);
-            });
             store.on("error", (err) => {
                 store?.dispose();
                 store = null;
                 reject(err);
             });
+
+            console.log("Connected to Database");
+            resolve(store!);
         }
     });
 }

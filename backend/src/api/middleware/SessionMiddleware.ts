@@ -1,13 +1,9 @@
-import DescopeClient from "@descope/node-sdk";
-import { Request, Response, NextFunction } from "express";
-import dotenv from "dotenv";
-import User from "../model/User";
-import { connectDB } from "../../config/db.config";
-
-dotenv.config();
+import { Response, NextFunction } from "express";
+import RequestWithUser from "../../types/request";
+import connectDescope from "../../config/descope.config";
 
 export async function sessionMiddleware(
-    req: Request,
+    req: RequestWithUser,
     res: Response,
     next: NextFunction
 ): Promise<void> {
@@ -18,22 +14,14 @@ export async function sessionMiddleware(
     }
 
     try {
-        const descopeClient = DescopeClient({
-            projectId: process.env.PROJECT_ID || "None",
-        });
+        const descopeClient = connectDescope();
+
+        if (!descopeClient) {
+            res.status(500).json({ error: "Internal Server Error" });
+            return;
+        }
+
         const authInfo = await descopeClient.validateSession(token);
-        await connectDB()
-            .then((store) => {
-                const data = store
-                    ?.openSession()
-                    .query({ collection: "Users" })
-                    .whereEquals("sub", authInfo.token.sub)
-                    .firstOrNull();
-            })
-            .catch((error) => {
-                res.status(500).json({ error: "Internal Server Error" });
-                return;
-            });
 
         console.log(
             "Session successfully validated for %s at %s",
@@ -41,9 +29,21 @@ export async function sessionMiddleware(
             new Date(),
             authInfo
         );
+
+        if (!authInfo) {
+            res.status(401).json({error: "Unauthorized"})
+        }
+        if (!authInfo.token.sub) {
+            res.status(500).json({ error: "Internal Server Error" });
+            return;
+        }
+
+        req.token = token;
+        req.subject = authInfo.token.sub;
+
         next();
     } catch (error) {
-        console.error(error);
-        res.status(401).json({ error: "Unauthorized " });
+        console.error("Error validating session: ", error);
+        res.status(500).json({ error: "Internal Server Error" });
     }
 }

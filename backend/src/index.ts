@@ -2,7 +2,9 @@ import express from "express";
 import cookieParser from "cookie-parser";
 import cors from "cors";
 import helmet from "helmet";
+import RequestWithUser from "./types/request";
 import { sessionMiddleware } from "./api/middleware/SessionMiddleware";
+import UserRoute from "./api/routes/UserRoute";
 
 const app = express();
 const port = process.env.PORT || 3000;
@@ -32,7 +34,10 @@ if (environment === "development") {
     app.use(cors());
 }
 
-app.use(sessionMiddleware);
+app.use((req, res, next) => {
+    sessionMiddleware(req as RequestWithUser, res, next);
+});
+app.use(UserRoute);
 app.use((req, res) => {
     res.status(404).json({ error: "Not Found" });
 });
