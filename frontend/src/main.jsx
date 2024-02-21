@@ -5,6 +5,9 @@ import './index.css';
 import { createBrowserRouter, RouterProvider } from "react-router-dom";
 import SignInPage from './components/SignInPage.jsx';
 import Solutions from './components/Solutions.jsx';
+import Resources from './components/Resources.jsx';
+import Aboutus from './components/Aboutus.jsx';
+import Homepage from './App.jsx';
 import { AuthProvider } from '@descope/react-sdk';
 
 const router = createBrowserRouter([
@@ -19,8 +22,21 @@ const router = createBrowserRouter([
   {
     path:"/solutions",
     element: <Solutions/>,
+  },
+  {
+    path:"/resources",
+    element: <Resources/>,
+  },
+  {
+    path:"/about-us",
+    element: <Aboutus/>,
+  },
+  {
+    path:"/homepage",
+    element: <Homepage/>,
   }
 ]);
+
 
 
 ReactDOM.createRoot(document.getElementById('root')).render(

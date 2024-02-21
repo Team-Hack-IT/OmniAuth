@@ -12,8 +12,8 @@ function Header() {
         <header>
             <div className='logo'>
                 <img src={ logo } alt="logo" />
-                <h1>Omni</h1>
-                <p>Auth</p>
+                <h1><Link to ="/homepage" style={{textDecoration:'none',color:'inherit'}}>Omni</Link></h1>
+                <p><Link to ="/homepage" style={{textDecoration:'none',color:'inherit'}}>Auth</Link></p>
             </div>
 
             <div className='menu'>
@@ -26,7 +26,7 @@ function Header() {
             </div>
             
 
-            <Link to ="/signin">
+            <Link to ="/signin" style={{textDecoration:'none',color:'inherit'}}>
                 <button>Get Started</button>
             </Link>
 
