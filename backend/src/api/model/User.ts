@@ -9,6 +9,7 @@ interface User {
     createdAt?: Date;
     updatedAt?: Date;
     history?: object;
+    country?: string;
 }
 
 export default User;

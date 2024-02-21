@@ -5,6 +5,8 @@ import helmet from "helmet";
 import RequestWithUser from "./types/request";
 import { sessionMiddleware } from "./api/middleware/SessionMiddleware";
 import UserRoute from "./api/routes/UserRoute";
+import specs from "./swaggerConfig";
+import swaggerUi from "swagger-ui-express";
 
 const app = express();
 const port = process.env.PORT || 3000;
@@ -33,6 +35,8 @@ if (environment === "development") {
 } else {
     app.use(cors());
 }
+
+app.use("/api-docs", swaggerUi.serve, swaggerUi.setup(specs));
 
 app.use((req, res, next) => {
     sessionMiddleware(req as RequestWithUser, res, next);
