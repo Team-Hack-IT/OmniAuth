@@ -1,4 +1,4 @@
-import {  Response, NextFunction } from "express";
+import { Response, NextFunction } from "express";
 import { UserMiddleware } from "../api/middleware/UserMiddleware";
 import { describe, beforeEach, it } from "node:test";
 import RequestWithUser from "../types/request";
@@ -12,7 +12,7 @@ describe("UserMiddleware Test", () => {
         req = {
             subject: "",
             token: "",
-            user: null
+            user: null,
         } as RequestWithUser;
         res = {
             status: jest.fn().mockReturnThis(),

@@ -1,4 +1,4 @@
-interface User {
+type User = {
     userId: string;
     firstname: string;
     lastname: string;
@@ -10,6 +10,6 @@ interface User {
     updatedAt?: Date;
     history?: object;
     country?: string;
-}
+};
 
 export default User;

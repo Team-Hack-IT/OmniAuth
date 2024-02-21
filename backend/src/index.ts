@@ -5,7 +5,7 @@ import helmet from "helmet";
 import RequestWithUser from "./types/request";
 import { sessionMiddleware } from "./api/middleware/SessionMiddleware";
 import UserRoute from "./api/routes/UserRoute";
-import specs from "./swaggerConfig";
+import yaml from "yamljs";
 import swaggerUi from "swagger-ui-express";
 
 const app = express();
@@ -22,7 +22,10 @@ if (environment === "development") {
         ? process.env.ALLOWED_ORIGINS.split(",")
         : ["http://localhost:5173", "http://localhost:3000"];
     const corsOptions = {
-        origin: (origin: string | undefined, callback: any) => {
+        origin: (
+            origin: string | undefined,
+            callback: (error: Error | null, allow?: boolean) => void
+        ) => {
             if (!origin || allowedOrigins.includes(origin)) {
                 callback(null, true);
             } else {
@@ -36,7 +39,8 @@ if (environment === "development") {
     app.use(cors());
 }
 
-app.use("/api-docs", swaggerUi.serve, swaggerUi.setup(specs));
+const swaggerDocument = yaml.load("./src/docs/user.yaml");
+app.use("/api-docs", swaggerUi.serve, swaggerUi.setup(swaggerDocument));
 
 app.use((req, res, next) => {
     sessionMiddleware(req as RequestWithUser, res, next);

@@ -31,7 +31,7 @@ export async function sessionMiddleware(
         );
 
         if (!authInfo) {
-            res.status(401).json({error: "Unauthorized"})
+            res.status(401).json({ error: "Unauthorized" });
         }
         if (!authInfo.token.sub) {
             res.status(500).json({ error: "Internal Server Error" });
