@@ -12,6 +12,7 @@ import { useData } from '../../context/FormContext';
 import { Axios } from '../../Axios';
 import FormStatusPage from './FormStatus';
 
+
 type Inputs = z.infer<typeof IndividualOnboardingSchema>;
 type fieldname = keyof Inputs;
 
@@ -30,6 +31,7 @@ const IndividualOnboarding = () => {
     const [isLoading, setIsLoading] = useState(false);
     const [status, setStatus] = useState<'Successful' | 'Failed'>('Successful');
     const [selectedTab, setSelectedTab] = useState<'individual' | 'organization'>('individual');
+
 
     const {
       register,
@@ -209,7 +211,18 @@ const IndividualOnboarding = () => {
               {/* FIRST STEP */}
               {currentStep === 1 && (
               <>
-             
+                <div className='form-control'>
+                 
+                  <input
+                    type='phone'
+                    id='phone'
+                    // {...register('phone')}
+                    placeholder='Enter your phone number'
+                  />
+                  {/* {errors.phone?.message && (
+                    <p className='error'>{errors.phone.message}</p>
+                  )} */}
+                </div>
               </>
             )}
               
@@ -230,11 +243,11 @@ const IndividualOnboarding = () => {
               disabled={isLoading}
             >
               {isLoading && <Loader2 className='mr-2 animate-spin' />}
-              {currentStep === steps.length - 2
-                ? 'Verify'
+              {currentStep === steps.length - 1
+                ? 'Continue'
                 : isLoading
                 ? 'Verifying...'
-                : 'Continue'}
+                : 'Verify'}
             </button>
           </form>
         </div>

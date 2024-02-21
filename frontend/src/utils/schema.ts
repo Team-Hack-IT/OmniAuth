@@ -11,6 +11,7 @@ export const IndividualOnboardingSchema = z.object({
     country: z.string().min(3, { message: "Country is required" }),
     location: z.string().min(3,{ message: "Location is required" }),
     channel: z.string().min(3, { message: "Channel is required" }),
+    // phone: z.string().min(3, { message: "Phone is required" }),
 
 })
 
@@ -21,4 +22,5 @@ export const BusinessOnboardingSchema = z.object({
     organizationCountry: z.string().min(3, { message: "Country is required" }),
     organizationSector: z.string().min(3, { message: "Sector is required" }),
     channel: z.string().min(3, { message: "Channel is required" }),
+    phone: z.string().min(3, { message: "Phone is required" }),
 })

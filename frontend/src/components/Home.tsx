@@ -17,7 +17,7 @@ const Home = ( {children}: Props) => {
   };
 
   return (
-    <section className="flex gap-6 z-20 md:z-0">
+    <section className=" gap-6 z-20 md:z-0">
       <div
         className={`bg-gray-500 min-h-screen   ${
           open ? "w-72" : "w-16"

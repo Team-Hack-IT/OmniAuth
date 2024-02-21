@@ -1,23 +1,21 @@
 export const steps = [
   {
     id: "Step 1",
-    name: "Get Started",
+    name: "Tell us more about you",
+
   },
   {
     id: "Step 2",
-    name: "Personal Information",
-    fields: ["name", "email", "phone", "location", "description"],
+    name: "Verify Your Phone Number",
+    
   },
+
   {
     id: "Step 3",
-    name: "Phone number",
-  },
-  {
-    id: "Step 4",
     name: "OTP Verification",
   },
   {
-    id: "Step 5",
+    id: "Step 4",
     name: "Completed",
   },
 ];
