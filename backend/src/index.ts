@@ -39,7 +39,7 @@ if (environment === "development") {
     app.use(cors());
 }
 
-const swaggerDocument = yaml.load("./src/docs/user.yaml");
+const swaggerDocument = yaml.load("./src/docs/User.yaml");
 app.use("/api-docs", swaggerUi.serve, swaggerUi.setup(swaggerDocument));
 
 app.use((req, res, next) => {
