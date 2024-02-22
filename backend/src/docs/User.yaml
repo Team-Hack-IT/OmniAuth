@@ -1,0 +1,176 @@
+openapi: 3.0.0
+info:
+    title: Omni Auth User API
+    description: Documentation for the endpoint of the omni auth user API
+    version: 1.0.0
+paths:
+    /users/create:
+        post:
+            summary: Create a new user
+            description: Endpoint to create a new user.
+            requestBody:
+                required: true
+                content:
+                    application/json:
+                        schema:
+                            $ref: "#/components/schemas/User"
+            responses:
+                "201":
+                    description: User created successfully
+                    content:
+                        application/json:
+                            schema:
+                                $ref: "#/components/schemas/User"
+                    example:
+                        username: john_doe
+                        password: password123
+                        email: john.doe@example.com
+                "400":
+                    description: Invalid request payload
+                "500":
+                    description: Internal server error
+
+    /profile:
+        get:
+            summary: Get user profile
+            description: Endpoint to get the profile of the authenticated user.
+            responses:
+                "200":
+                    description: User profile retrieved successfully
+                    content:
+                        application/json:
+                            schema:
+                                $ref: "#/components/schemas/User"
+                    example:
+                        username: john_doe
+                        email: john.doe@example.com
+                "401":
+                    description: Unauthorized access
+                "500":
+                    description: Internal server error
+
+    /users/updatepassword:
+        post:
+            summary: Update user password
+            description: Endpoint to update the password of the authenticated user.
+            requestBody:
+                required: true
+                content:
+                    application/json:
+                        schema:
+                            $ref: "#/components/schemas/UpdatePasswordRequest"
+            responses:
+                "200":
+                    description: Password updated successfully
+                "400":
+                    description: Invalid request payload
+                "401":
+                    description: Unauthorized access
+                "500":
+                    description: Internal server error
+            example:
+                currentPassword: oldpassword123
+                newPassword: newpassword123
+
+    /users/updateemail:
+        post:
+            summary: Update user email
+            description: Endpoint to update the email of the authenticated user.
+            requestBody:
+                required: true
+                content:
+                    application/json:
+                        schema:
+                            $ref: "#/components/schemas/UpdateEmailRequest"
+            responses:
+                "200":
+                    description: Email updated successfully
+                "400":
+                    description: Invalid request payload
+                "401":
+                    description: Unauthorized access
+                "500":
+                    description: Internal server error
+            example:
+                newEmail: newemail@example.com
+
+    /users/delete:
+        delete:
+            summary: Delete user
+            description: Endpoint to delete the authenticated user.
+            responses:
+                "200":
+                    description: User deleted successfully
+                "401":
+                    description: Unauthorized access
+                "500":
+                    description: Internal server error
+
+    /users/update:
+        post:
+            summary: Update user
+            description: Endpoint to update the details of the authenticated user.
+            requestBody:
+                required: true
+                content:
+                    application/json:
+                        schema:
+                            $ref: "#/components/schemas/UpdateUserRequest"
+            responses:
+                "200":
+                    description: User updated successfully
+                "400":
+                    description: Invalid request payload
+                "401":
+                    description: Unauthorized access
+                "500":
+                    description: Internal server error
+            example:
+                username: new_username
+                email: new_email@example.com
+
+    /verifyphone:
+        post:
+            summary: Verify phone number
+            description: Endpoint to verify the phone number of the authenticated user.
+            requestBody:
+                required: true
+                content:
+                    application/json:
+                        schema:
+                            $ref: "#/components/schemas/VerifyPhoneRequest"
+            responses:
+                "200":
+                    description: Phone number verified successfully
+                "400":
+                    description: Invalid request payload
+                "401":
+                    description: Unauthorized access
+                "500":
+                    description: Internal server error
+            example:
+                phoneNumber: +1234567890
+
+    /logoutall:
+        get:
+            summary: Logout from all devices
+            description: Endpoint to logout the authenticated user from all devices.
+            responses:
+                "200":
+                    description: User logged out from all devices successfully
+                "401":
+                    description: Unauthorized access
+                "500":
+                    description: Internal server error
+
+    /logout:
+        get:
+            summary: Logout
+            description: Endpoint to logout the authenticated user.
+            responses:
+                "200":
+                    description: User logged out successfully
+                "401":
+                    description: Unauthorized access
+                "500":
+                    description: Internal server error

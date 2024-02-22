@@ -29,7 +29,6 @@ const Verification = () => {
         navigate("/id-verification"); 
         break;
       default:
-
         navigate("/");
     }
   };
