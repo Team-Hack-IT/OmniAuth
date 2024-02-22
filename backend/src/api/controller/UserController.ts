@@ -15,29 +15,31 @@ const createUser = async (req: RequestWithUser, res: Response) => {
     connectDB()
         .then(async (store) => {
             const session = store.openSession();
+            const user: User | null = await session.load(req.subject);
 
-            if (!req.subject) {
-                res.status(500).json({ error: "Internal Server Error" });
+            if (user) {
+                res.status(409).json({ error: "User already exists" });
                 return;
             }
 
-            const { firstname, lastname, email, role } = req.body;
+            const { firstname, lastname, email, role, country } = req.body;
 
-            if (!firstname || !lastname || !email || !role) {
+            if (!firstname || !lastname || !email || !role || !country) {
                 res.status(400).json({ error: "Bad Request" });
                 return;
             }
 
-            const user: User = {
-                userId: req.subject,
+            const newUser: User = {
                 firstname,
                 lastname,
                 email,
                 role,
+                country,
+                createdAt: new Date(),
             };
-            session.store(user, req.subject);
+            session.store(newUser, req.subject);
             session.saveChanges();
-            res.json({ message: "User created" });
+            res.status(201).json({ message: "User created" });
         })
         .catch((error) => {
             console.error("Error creating user: ", error);
@@ -46,42 +48,56 @@ const createUser = async (req: RequestWithUser, res: Response) => {
 };
 
 const updateUser = async (req: RequestWithUser, res: Response) => {
-    connectDB().then(async (store) => {
-        const user: User | null = await store.openSession().load(req.subject);
+    connectDB()
+        .then(async (store) => {
+            const user: User | null = await store
+                .openSession()
+                .load(req.subject);
+            const validKeys = [
+                "firstname",
+                "lastname",
+                "email",
+                "role",
+                "country",
+            ];
 
-        for (const key in req.body) {
-            if (
-                key === "password" ||
-                key === "userId" ||
-                key === "createdAt" ||
-                key === "updatedAt" ||
-                (user && !(key in user))
-            ) {
-                res.status(400).json({ error: "Bad Request" });
+            if (!user) {
+                res.status(404).json({ error: "User not found" });
                 return;
             }
-        }
-        if (user) {
-            const session = store.openSession();
 
             for (const key in req.body) {
-                if (user && key in user) {
-                    //user[key] = req.body[key];
+                let index = validKeys.indexOf(key);
+                if (index === -1) {
+                    res.status(400).json({ error: "Bad Request" });
+                    return;
+                } else {
+                    let attr = validKeys[index];
+                    (user as any)[attr] = req.body[attr];
                 }
             }
-            user.updatedAt = new Date();
-            session.store(user);
+
+            const session = store.openSession();
+            session.store(user, req.subject);
             session.saveChanges();
-            res.json({ message: "User updated" });
-        } else {
-            res.status(404).json({ error: "User not found" });
-        }
-    });
+            res.status(200).json({ message: "User updated" });
+        })
+        .catch((error) => {
+            console.error("Error updating user: ", error);
+            res.status(500).json({ error: "Internal Server Error" });
+        });
 };
 
 const deleteUser = async (req: RequestWithUser, res: Response) => {
     try {
-        await descopeClient?.management.user.delete(req.token);
+        if (!req.user?.email) {
+            res.status(500).json({ error: "Internal Server Error" });
+            return;
+        }
+
+        await descopeClient?.management.user.delete(req.user.email);
+        await descopeClient?.logoutAll(req.token);
+
         connectDB()
             .then(async (store) => {
                 const session = store.openSession();
@@ -89,6 +105,7 @@ const deleteUser = async (req: RequestWithUser, res: Response) => {
                 if (user) {
                     session.delete(user);
                     session.saveChanges();
+                    res.json({ message: "User deleted" });
                 } else {
                     res.status(404).json({ error: "User not found" });
                 }
@@ -97,8 +114,6 @@ const deleteUser = async (req: RequestWithUser, res: Response) => {
                 console.error("Error loading user: ", error);
                 res.status(500).json({ error: "Internal Server Error" });
             });
-
-        res.json({ message: "User deleted" });
     } catch (error) {
         console.error("Error deleting user: ", error);
         res.status(500).json({ error: "Internal Server Error" });
@@ -107,6 +122,11 @@ const deleteUser = async (req: RequestWithUser, res: Response) => {
 
 const updateEmail = async (req: RequestWithUser, res: Response) => {
     try {
+        if (!req.body.email || req.body.length > 1) {
+            res.status(400).json({ error: "Bad Request" });
+            return;
+        }
+
         await descopeClient?.management.user.updateEmail(
             req.token,
             req.body.email,
@@ -140,29 +160,34 @@ const updateEmail = async (req: RequestWithUser, res: Response) => {
 
 const verifyPhone = async (req: RequestWithUser, res: Response) => {
     try {
-        if (req.user?.email) {
-            await descopeClient?.otp.verify.sms(req.user.email, req.body.phone);
-            connectDB()
-                .then(async (store) => {
-                    const session = store.openSession();
-                    const user: User | null = await session.load(req.subject);
-
-                    if (!user) {
-                        res.status(404).json({ error: "User not found" });
-                        return;
-                    }
-                    user.phone = req.body.phone;
-                    session.store(user, req.subject);
-                    session.saveChanges();
-                    res.status(200).json({ message: "Phone number verified" });
-                })
-                .catch((error) => {
-                    console.error("Error creating user: ", error);
-                    res.status(500).json({ error: "Internal Server Error" });
-                });
-        } else {
-            res.status(500).json({ error: "Internal Server Error" });
+        if (!req.body.phone || req.body.length > 1) {
+            res.status(400).json({ error: "Bad Request" });
+            return;
         }
+        if (!req.user?.email) {
+            res.status(500).json({ error: "Internal Server Error" });
+            return;
+        }
+
+        await descopeClient?.otp.verify.sms(req.user.email, req.body.phone);
+        connectDB()
+            .then(async (store) => {
+                const session = store.openSession();
+                const user: User | null = await session.load(req.subject);
+
+                if (!user) {
+                    res.status(404).json({ error: "User not found" });
+                    return;
+                }
+                user.phone = req.body.phone;
+                session.store(user, req.subject);
+                session.saveChanges();
+                res.status(200).json({ message: "Phone number verified" });
+            })
+            .catch((error) => {
+                console.error("Error creating user: ", error);
+                res.status(500).json({ error: "Internal Server Error" });
+            });
     } catch (error) {
         console.error("Error verifying phone: ", error);
         res.status(500).json({ error: "Internal Server Error" });
@@ -175,25 +200,27 @@ const setPassword = async (req: RequestWithUser, res: Response) => {
             const user: User | null = await store
                 .openSession()
                 .load(req.subject);
-            if (user) {
-                await bcrypt
-                    .hash(req.body.password, 12)
-                    .then((hash) => {
-                        const session = store.openSession();
-                        user.password = hash;
-                        session.store(user);
-                        session.saveChanges();
-                        res.json({ message: "Password changed" });
-                    })
-                    .catch((error) => {
-                        console.error("Error hashing password: ", error);
-                        res.status(500).json({
-                            error: "Internal Server Error",
-                        });
-                    });
-            } else {
+
+            if (!user) {
                 res.status(404).json({ error: "User not found" });
+                return;
             }
+
+            await bcrypt
+                .hash(req.body.password, 12)
+                .then((hash) => {
+                    const session = store.openSession();
+                    user.password = hash;
+                    session.store(user);
+                    session.saveChanges();
+                    res.json({ message: "Password changed" });
+                })
+                .catch((error) => {
+                    console.error("Error hashing password: ", error);
+                    res.status(500).json({
+                        error: "Internal Server Error",
+                    });
+                });
         })
         .catch((error) => {
             console.error("Error loading user: ", error);
@@ -203,8 +230,12 @@ const setPassword = async (req: RequestWithUser, res: Response) => {
 
 const updatePassword = async (req: RequestWithUser, res: Response) => {
     try {
+        if (!req.body.password || req.body.length > 1) {
+            res.status(400).json({ error: "Bad Request" });
+            return;
+        }
         await descopeClient?.management.user.setPassword(
-            req.token,
+            req.user?.email as string,
             req.body.password
         );
         setPassword(req, res);
