@@ -8,20 +8,20 @@ export async function UserMiddleware(
     res: Response,
     next: NextFunction
 ): Promise<void> {
-    connectDB()
-        .then(async (store) => {
-            if (req.subject) {
-                const user = await store.openSession().load<User>(req.subject);
-                if (user) {
-                    req.user = user;
-                    next();
-                } else {
-                    res.status(404).json({ error: "User Not Found" });
-                }
+    connectDB().then(async (store) => {
+        if (req.subject) {
+            const session = store.openSession();
+            const user: (User & { "@metadata": any }) | null =
+                await session.load(req.subject);
+
+            if (user) {
+                const { "@metadata": metadata, id, ...updatedUser } = user;
+                const updatedAt = metadata ? metadata["@last-modified"] : null;
+                req.user = { id, ...updatedUser, updatedAt };
+                next();
+            } else {
+                res.status(404).json({ error: "Not Found" });
             }
-        })
-        .catch((error) => {
-            console.error(error);
-            res.status(500).json({ error: "Internal Server Error" });
-        });
+        }
+    });
 }
