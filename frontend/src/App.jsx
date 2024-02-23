@@ -5,7 +5,6 @@ import { Routes, Route } from 'react-router-dom';
 import Login from './pages/login/Login';
 import Home from './components/Home';
 import Dashboard from './pages/dashboard/Dashboard';
-import { DataContext } from './context/FormContext';
 import IndividualOnboarding from './pages/onboarding/IndividualOnboarding';
 import Onboarding from './pages/onboarding/Onboarding';
 import Verification from './pages/verification/Verification';
