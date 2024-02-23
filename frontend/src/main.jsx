@@ -5,7 +5,6 @@ import "./index.css";
 import { AuthProvider } from "@descope/react-sdk";
 import { BrowserRouter as Router } from "react-router-dom";
 
-import { DataContext } from "./context/FormContext";
 
 ReactDOM.createRoot(document.getElementById("root")).render(
   <React.StrictMode>

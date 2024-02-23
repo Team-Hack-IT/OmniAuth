@@ -1,9 +1,7 @@
-import React from 'react';
+
 import "../styles/Header.css";
 import logo from "./logo.png";
 import { Link } from 'react-router-dom';
-import SignInPage from './SignInPage';
-import { AuthProvider } from '@descope/react-sdk';
 
 
 
@@ -26,7 +24,7 @@ function Header() {
             </div>
             
 
-            <Link to ="/signin" style={{textDecoration:'none',color:'inherit'}}>
+            <Link to ="/login" style={{textDecoration:'none',color:'inherit'}}>
                 <button>Get Started</button>
             </Link>
 

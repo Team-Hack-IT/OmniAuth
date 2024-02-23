@@ -1,4 +1,3 @@
-import React, {useState} from 'react';
 import "../styles/Connect.css"
 import EmailForm from './EmailForm';
 

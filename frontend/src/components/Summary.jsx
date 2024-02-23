@@ -1,4 +1,3 @@
-import React from 'react';
 import "../styles/Summary.css";
 import summary_img from "./summary_img.png";
 

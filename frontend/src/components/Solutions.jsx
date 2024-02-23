@@ -1,4 +1,3 @@
-import React from 'react';
 import Header from './Header.jsx';
 import "../styles/Solutions.css";
 import Footer from './Footer.jsx';
@@ -10,7 +9,7 @@ function Solutions() {
         <div>
             <Header />
 
-            <a class="solutions_title">Our Solutions</a>
+            <a className="solutions_title">Our Solutions</a>
 
             <div className='Solution_Grid_r1'>
                 <div className='Solution_box'>
@@ -31,7 +30,7 @@ function Solutions() {
             <div className='Solution_Grid_r1'> 
                 <div className='Solution_box'>
                     <h2>ID Verification</h2>
-                    <p>We ensure the authenticity and validity of user identities with our ID verification service. Our advanced verification technology analyzes government-issued IDs, passports, and driver's licenses to confirm identity documents' authenticity.</p>
+                    <p>We ensure the authenticity and validity of user identities with our ID verification service. Our advanced verification technology analyzes government-issued IDs, passports, and driver&#39;s licenses to confirm identity documents&#39; authenticity.</p>
                     <button>Click Here</button>
                 </div>               
             

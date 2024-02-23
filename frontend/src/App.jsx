@@ -13,6 +13,7 @@ import NotFoundPage from './pages/Error/404Page';
 import GenerateKey from './pages/dashboard/GenerateKey';
 import Protected from './components/Protected';
 import Logout from './pages/logout/Logout';
+import LandingPage from './pages/landingpage/LandingPage';
 
 function App() {
 
@@ -21,10 +22,11 @@ function App() {
  
   <Routes>
   <Route path="/*" element={<NotFoundPage />} />
+  <Route path="/" element={<LandingPage/>} />
+
     <Route path="/login" element={<Login />} />
    
     <Route element={<Protected/>} >
-       <Route path="/" element={<Home><Dashboard /></Home>} />
     <Route path="/dashboard" element={<Home><Dashboard /></Home>} />
     <Route path="/onboarding" element={<Home><Onboarding /></Home>} />
     <Route path="/individual-onboarding" element={<Home><IndividualOnboarding /></Home>} />

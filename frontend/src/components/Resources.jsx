@@ -13,7 +13,7 @@ function Solutions() {
         <div>
             <Header />
 
-            <a class="resources_title">Resources</a>
+            <a className="resources_title">Resources</a>
 
             <div className='Resources_Grid_r1'>           
                 <div className='Resource_box'>

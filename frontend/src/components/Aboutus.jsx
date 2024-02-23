@@ -1,4 +1,4 @@
-import React from 'react';
+
 import Header from './Header.jsx';
 import "../styles/Aboutus.css";
 import Footer from './Footer.jsx';
@@ -10,12 +10,12 @@ function Solutions() {
         <div>
             <Header />
             <div className='About_header'>
-                <a class="about_title">About Us</a>
-                <p class="about_p">Welcome to OmniAuth, your trusted partner in securing digital identities and transactions. Our comprehensive suite of security solutions empowers businesses and individuals to protect sensitive information, prevent fraud, and enhance trust in online interactions.
+                <a className="about_title">About Us</a>
+                <p className="about_p">Welcome to OmniAuth, your trusted partner in securing digital identities and transactions. Our comprehensive suite of security solutions empowers businesses and individuals to protect sensitive information, prevent fraud, and enhance trust in online interactions.
                 </p> 
             </div>
 
-            <a class="service_title">Our Services</a>
+            <a className="service_title">Our Services</a>
 
             <div className='Service_Grid_r1'>
                 <div className='Service_box'>
@@ -33,7 +33,7 @@ function Solutions() {
             <div className='Service_Grid_r1'>            
                 <div className='Service_box'>
                     <h2>ID Verification</h2>
-                    <p>Ensure the authenticity and validity of user identities with our ID verification service. Our advanced verification technology analyzes government-issued IDs, passports, and driver's licenses to confirm identity documents' authenticity, helping businesses comply with Know Your Customer (KYC) regulations and prevent identity theft.
+                    <p>Ensure the authenticity and validity of user identities with our ID verification service. Our advanced verification technology analyzes government-issued IDs, passports, and driver&#39;s licenses to confirm identity documents&#39; authenticity, helping businesses comply with Know Your Customer (KYC) regulations and prevent identity theft.
                     </p>
                 </div>               
             
@@ -44,7 +44,7 @@ function Solutions() {
                 </div>                          
             </div>
 
-            <a class="service_title">Why You Should Choose Us</a>
+            <a className="service_title">Why You Should Choose Us</a>
 
             <div className='Service_Grid_r1'>
                 <div className='Service_box'>
@@ -74,8 +74,8 @@ function Solutions() {
             </div>
 
             <div className='About_header_2'>
-                <a class="about_title">Get Started With OmniAuth</a>
-                <p class="about_p">Protect your digital assets and build trust with your users by leveraging SecureGuard's comprehensive security solutions. Contact us today to learn more about how we can help secure your business and enhance your online presence.</p>
+                <a className="about_title">Get Started With OmniAuth</a>
+                <p className="about_p">Protect your digital assets and build trust with your users by leveraging SecureGuard&#39;s comprehensive security solutions. Contact us today to learn more about how we can help secure your business and enhance your online presence.</p>
             </div>
         
             <Footer2 />
