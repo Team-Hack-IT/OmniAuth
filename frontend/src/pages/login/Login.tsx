@@ -1,61 +1,58 @@
-
-import React, { useCallback } from 'react'
+import React, { useCallback } from "react";
 import { AiOutlineLoading3Quarters } from "react-icons/ai";
-import { useDescope, useSession, useUser } from '@descope/react-sdk'
-import { Descope } from '@descope/react-sdk'
-import { getSessionToken } from '@descope/react-sdk';
+import { useDescope, useSession, useUser } from "@descope/react-sdk";
+import { Descope } from "@descope/react-sdk";
+import { getSessionToken } from "@descope/react-sdk";
+import {Navigate, useNavigate, useLocation} from "react-router-dom";
 
 const Login = () => {
-  const { isAuthenticated, isSessionLoading } = useSession()
+  const { isAuthenticated, isSessionLoading } = useSession();
+  const location = useLocation();
+const navigate = useNavigate();
+  const { user, isUserLoading } = useUser();
 
-  const { user, isUserLoading } = useUser()
 
-  const { logout } = useDescope()
 
   const exampleFetchCall = async () => {
     const sessionToken = getSessionToken();
 
     // example fetch call with authentication header
-    fetch('your_application_server_url', {
+    fetch("your_application_server_url", {
       headers: {
-        Accept: 'application/json',
-        Authorization: 'Bearer ' + sessionToken,
-      }
-    })
+        Accept: "application/json",
+        Authorization: "Bearer " + sessionToken,
+      },
+    });
+  };
+
+ 
+
+
+  const handleLogin = () => {
+    navigate("/generate-key");
   }
 
-  const handleLogout = useCallback(() => {
-    logout()
-  }, [logout])
   return (
     <>
-    
-    {!isAuthenticated &&
-        (
-            <Descope
-                flowId="sign-up-or-in"
-                onSuccess={(e) => console.log(e.detail.user)}
-                onError={(e) => console.log('Could not log in!')}
-            />
-        )
-    }
+      {!isAuthenticated && (
+        <div className="max-w-[350px] mx-auto">
+          <Descope
+            flowId="sign-up-or-in"
+            onSuccess={handleLogin}
+            onError={(e) => console.log("Could not log in!")}
+          />
+        </div>
+      )}
 
-    {
-        (isSessionLoading || isUserLoading) && <AiOutlineLoading3Quarters className='animate-spin text-3xl absolute top-[50%] left-[50%]'/>
-    }
+      {(isSessionLoading || isUserLoading) && (
+        <AiOutlineLoading3Quarters className="animate-spin text-3xl absolute top-[50%] left-[50%]" />
+      )}
 
-    {!isUserLoading && isAuthenticated &&
-        (
-        <>
-            <p >Hello {user.name}</p>
-            <div>My Private Component</div>
-            <button onClick={handleLogout}>Logout</button>
-        </>
-        )
-        
-    }
-</>
-  )
-}
+      {!isUserLoading && isAuthenticated && (
+        <Navigate to="/generate-key" state={{from: location.pathname}}/>
+      )}
+    </>
+  );
+};
 
-export default Login
+export default Login;

@@ -15,7 +15,7 @@
     "@hookform/error-message": "^2.0.1",
     "@hookform/resolvers": "^3.3.4",
     "@material-tailwind/react": "^2.1.9",
-    "@types/node": "^20.11.19",
+    "@types/node": "^20.11.20",
     "axios": "^1.6.7",
     "class-variance-authority": "^0.7.0",
     "clsx": "^2.1.0",

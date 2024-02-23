@@ -28,41 +28,49 @@ const Onboarding = () => {
        Are you signing up as an individual or a business?
       </p>
       </div>
+    <div className="flex flex-col justify-center items-center">
+
     
-      <div className="flex justify-center mb-4 gap-10">
-        <div className=" flex flex-col items-center justify-center  gap-5  shadow-md p-4 md:p-10 rounded-md">
-          <FaUser color="green" />
-          <button
-            className={`px-4 py-2 mx-2 rounded-md ${
-              selectedTab === "individual"
-                ? "text-green-500 bg-white"
-                : "bg-gray-200 text-gray-800"
-            }`}
-            onClick={() => setSelectedTab("individual")}
-          >
-            Individual
-          </button>
-        </div>
-        <div className=" flex flex-col items-center justify-center  gap-5 p-4 md:p-10 shadow-md  rounded-md">
-          <GoOrganization color="green" />
-          <button
-            className={`px-4 py-2 mx-2 rounded-md ${
-              selectedTab === "organization"
-                ? "text-green-500 bg-white"
-                : "bg-gray-200 text-gray-800"
-            }`}
-            onClick={() => setSelectedTab("organization")}
-          >
-            Organization
-          </button>
-        </div>
-      </div>
-      <button
-        className=" box-border border hover:border-green-500 p-2 transition-all duration-300 rounded-md bg-green-500 hover:opacity-75"
-        onClick={handleSubmit}
-      >
-        Continue
-      </button>
+      <div className="flex justify-center mb-4 gap-10 mt-24 ml-20">
+  <div className={`flex flex-col items-center justify-center gap-5 shadow-md p-4 md:p-10 rounded-md cursor-pointer ${
+        selectedTab === "individual"
+          ? "text-button  border-2  border-button"
+          : "text-gray-800 border-gray-300"
+      }`}   onClick={() => setSelectedTab("individual")}
+    >
+    <FaUser className={`${selectedTab === "individual" ? "text-button": "text-gray-300"}`} />
+    <button
+      className={`px-4 py-2 mx-2 rounded-md`}
+      onClick={() => setSelectedTab("individual")}
+    >
+      Individual
+    </button>
+  </div>
+  <div className={`flex flex-col items-center justify-center gap-5 p-4 md:p-10 shadow-md rounded-md cursor-pointer ${
+        selectedTab === "organization"
+          ? "text-button border-2  border-button"
+          : "text-gray-800 border-gray-300"
+      }`}    onClick={() => setSelectedTab("organization")}>
+    <GoOrganization className={`${selectedTab === "individual" ? "text-button": "text-gray-300"}`} />
+    <button
+      className={`px-4 py-2 mx-2 rounded-md  `}
+      onClick={() => setSelectedTab("organization")}
+    >
+      Organization
+    </button>
+  </div>
+
+
+</div>
+<div>
+  <button
+  className="box-border border hover:border-button p-2 transition-all duration-300 rounded-md bg-button hover:opacity-75 mr-60 md:mr-80 my-4"
+  onClick={handleSubmit}
+>
+  Continue
+</button>
+  </div>
+  </div>
     </div>
   );
 };

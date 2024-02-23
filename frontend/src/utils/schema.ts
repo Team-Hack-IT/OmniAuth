@@ -11,7 +11,12 @@ export const IndividualOnboardingSchema = z.object({
     country: z.string().min(3, { message: "Country is required" }),
     location: z.string().min(3,{ message: "Location is required" }),
     channel: z.string().min(3, { message: "Channel is required" }),
-    // phone: z.string().min(3, { message: "Phone is required" }),
+    phone: z.string().min(3, { message: "Phone is required" }),
+
+})
+
+export const PhoneSchema = z.object({
+    phone: z.string().min(3, { message: "Phone is required" })
 
 })
 

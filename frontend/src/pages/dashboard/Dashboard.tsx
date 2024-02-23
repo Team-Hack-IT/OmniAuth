@@ -1,20 +1,36 @@
-import React from "react";
+import React, { useState } from "react";
+import { FaEye } from "react-icons/fa";
+import { FaRegEyeSlash } from "react-icons/fa";
+
+
 
 const Dashboard = () => {
+  const [show, setShow] = useState(false);
+
+const handleShow = () => {
+  setShow(!show);
+}
+
   return (
-   
-      <div>
-        <div className="bg-gray-300 p-5  rounded-md mb-5">
-          <h1 className="text-xl md:text-3xl font-bold mt-10 mb-10">Dashboard</h1>
-          <p className="mb-10 text-sm font-thin">
-            Click the link below to generate a unique API key to integrate
-          </p>
+    <div>
+      <div className="bg-gray-300 flex flex-col md:flex-row py-10 md:py-0 justify-evenly items-center p-4 rounded-md">
+        <div>
+        <h3 className="md:text-3xl text-md pb-5 md:pb-0">Your unique ID</h3>
         </div>
-        <div className="bg-gray-300 p-8  md:p-24 rounded-md mb-5 flex justify-center items-center ">
-          <button className="bg-green-500 text-white  text-sm  px-4 py-2 rounded-md">
-            Generate Unique ID
-          </button>
-       
+        <div className="flex justify-center items-center bg-white rounded-md p-2 border-2 border-button ">
+        <input type={
+          show ? "text" : "password"
+        }  
+       className="p-2 rounded-md outline-none" />
+        <div onClick={handleShow}>
+{
+  show ? <FaEye  className="cursor-pointer" /> : <FaRegEyeSlash className="cursor-pointer"/>
+}
+        </div>
+  
+        </div>
+        <button className="mt-5 md:my-4  bg-button p-3  rounded-md text-sm md:text-lg">Block/Unblock</button>
+      
       </div>
     </div>
   );
