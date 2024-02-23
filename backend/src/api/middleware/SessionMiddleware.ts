@@ -30,11 +30,8 @@ export async function sessionMiddleware(
             authInfo
         );
 
-        if (!authInfo) {
+        if (!authInfo || !authInfo.token.sub) {
             res.status(401).json({ error: "Unauthorized" });
-        }
-        if (!authInfo.token.sub) {
-            res.status(500).json({ error: "Internal Server Error" });
             return;
         }
 
