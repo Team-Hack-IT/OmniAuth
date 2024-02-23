@@ -1,9 +1,9 @@
 
 
 .footer2 {
-    background-color: #0a4e50;
+    background-color: #156064;
     display:flex;
-    justify-content: space-around;
+    justify-content:space-around;
     padding:14px;
     flex-direction: row;
     height: 300px;
@@ -35,8 +35,8 @@
 
 .FollowUs {
     display:flex;
-    justify-content: space-around;
-    padding:60px;
+    justify-content:baseline;
+    padding-top:70px;
     flex-direction: column;
 }
 

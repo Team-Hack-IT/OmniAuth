@@ -1,5 +1,9 @@
 import React from 'react';
 import "../styles/Footer2.css"
+import twitterlogo from "./twitterLogo.png";
+import fblogo from "./fbLogo.png";
+import linkedinlogo from "./linkedinLogo.png";
+import iglogo from "./igLogo.png";
 
 const Footer2 = () => {
     return (
@@ -18,9 +22,12 @@ const Footer2 = () => {
             </div>
             <div className='FollowUs'>
                 <h1>Follow Us</h1>
-                <a href="#">Privacy</a>
-                <a href="#">Term of Use</a>     
-                <a href="#">Cookie Policy</a>
+                <div className='SM_logos'>
+                    <img src={twitterlogo} alt="Twitter Logo"/>
+                    <img src={fblogo} alt="Facebook Logo"/>
+                    <img src={iglogo} alt="Instagram Logo"/>
+                    <img src={linkedinlogo} alt="Linkedin Logo"/>
+                </div>
             </div>
 
 
