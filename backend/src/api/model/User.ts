@@ -10,6 +10,8 @@ type User = {
     updatedAt?: Date;
     history?: object;
     country?: string;
+    isVerified?: boolean;
+    document?: object;
 };
 
 export default User;

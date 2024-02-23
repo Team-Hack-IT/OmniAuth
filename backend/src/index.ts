@@ -2,11 +2,12 @@ import express from "express";
 import cookieParser from "cookie-parser";
 import cors from "cors";
 import helmet from "helmet";
+import yaml from "yamljs";
+import swaggerUi from "swagger-ui-express";
 import RequestWithUser from "./types/request";
 import { sessionMiddleware } from "./api/middleware/SessionMiddleware";
 import UserRoute from "./api/routes/UserRoute";
-import yaml from "yamljs";
-import swaggerUi from "swagger-ui-express";
+import ServiceRoute from "./api/routes/ServiceRoute";
 
 const app = express();
 const port = process.env.PORT || 3000;
@@ -46,6 +47,8 @@ app.use((req, res, next) => {
     sessionMiddleware(req as RequestWithUser, res, next);
 });
 app.use(UserRoute);
+app.use(ServiceRoute);
+
 app.use((req, res) => {
     res.status(404).json({ error: "Not Found" });
 });
