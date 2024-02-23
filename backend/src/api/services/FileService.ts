@@ -1,11 +1,11 @@
 import { RequestHandler, Response, Request } from "express";
 import { v4 as uuidv4 } from "uuid";
 import Tesseract from "tesseract.js";
-import { connectDB } from "../config/db.config";
+import { connectDB } from "../../config/db.config";
 import { BufferObject, imageHash } from "image-hash";
 import sharp from "sharp";
-import User from "../api/model/User";
-import RequestWithUser from "../types/request";
+import User from "../model/User";
+import RequestWithUser from "../../types/request";
 import {
     DocumentStore,
     PutAttachmentOperation,
@@ -71,9 +71,13 @@ const verifyId = async (req: RequestWithUser, res: Response) => {
                 return;
             }
 
-            const idCardBuffer = await sharp(idCard).toBuffer();
-            const pictureBuffer = await sharp(picture).toBuffer();
-            const difference = 0; //await compareImages(idCardBuffer, pictureBuffer);
+            const idCardBufferObject: BufferObject = { data: idCard };
+            const pictureBufferObject: BufferObject = { data: picture };
+
+            const difference = await compareImages(
+                idCardBufferObject,
+                pictureBufferObject
+            );
 
             if (difference && difference < 200) {
                 user.isVerified = true;
@@ -154,9 +158,8 @@ const getFileFromDB = async (
             );
             return null;
         }
-        //const attachmentBuffer = Buffer.from(attachmentResult.data);
-        //return attachmentBuffer;
-        return null;
+        const attachmentBuffer = Buffer.from(attachmentResult.data.toString());
+        return attachmentBuffer;
     } catch (error) {
         console.error("Error fetching attachment:", error);
         return null;
@@ -241,4 +244,5 @@ const downloadFile = async (req: RequestWithUser, res: Response) => {
         res.status(500).json({ error: "An error occurred" });
     }
 };
+
 export { uploadFile, downloadFile, verifyId };

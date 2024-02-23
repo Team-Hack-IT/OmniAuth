@@ -25,7 +25,6 @@
     "dependencies": {
         "@descope/node-sdk": "^1.6.3",
         "bcrypt": "^5.1.1",
-        "chainlink": "^0.8.2",
         "convex": "^1.9.1",
         "cookie-parser": "^1.4.6",
         "cors": "^2.8.5",

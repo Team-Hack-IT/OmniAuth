@@ -1,15 +1,24 @@
 import Router from "express";
 import multer from "multer";
-import { uploadFile, downloadFile, verifyId } from "../../services/FileService";
+import { uploadFile, downloadFile, verifyId } from "../services/FileService";
+import { UserMiddleware } from "../middleware/UserMiddleware";
 
 const router = Router();
+router.use((req, res) => {
+    UserMiddleware;
+});
 const upload = multer();
 
-/**router.post("/users/verify-identity", upload.single("identityCard"), verifyId);
+router.post("/users/verify-id", upload.single("identityCard"), (req, res) => {
+    verifyId;
+});
 
-router.get("/users/download/:type", downloadFile);
+router.post("/users/upload/:type", upload.single(""), (req, res) => {
+    uploadFile;
+});
 
-router.post("/users/upload/:type", upload.single("file"), uploadFile);
-export default router;
-**/
+router.get("/users/download/:type", (req, res) => {
+    downloadFile;
+});
+
 export default router;

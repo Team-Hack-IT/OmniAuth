@@ -49,7 +49,7 @@ paths:
                 "500":
                     description: Internal server error
 
-    /users/updatepassword:
+    /users/update-password:
         post:
             summary: Update user password
             description: Endpoint to update the password of the authenticated user.
@@ -72,7 +72,7 @@ paths:
                 currentPassword: oldpassword123
                 newPassword: newpassword123
 
-    /users/updateemail:
+    /users/update-email:
         post:
             summary: Update user email
             description: Endpoint to update the email of the authenticated user.
@@ -170,6 +170,80 @@ paths:
             responses:
                 "200":
                     description: User logged out successfully
+                "401":
+                    description: Unauthorized access
+                "422":
+                    description: Unprocessable entity
+                "500":
+                    description: Internal server error
+
+    /users/verify-id:
+        post:
+            summary: Verify user identity
+            description: Endpoint to verify the identity of the authenticated user.
+            requestBody:
+                required: true
+                content:
+                    multipart/form-data:
+                        schema:
+                            type: object
+                            properties:
+                                identityCard:
+                                    type: string
+                                    format: binary
+            responses:
+                "200":
+                    description: Identity verified successfully
+                "400":
+                    description: Invalid request payload
+                "401":
+                    description: Unauthorized access
+                "500":
+                    description: Internal server error
+
+    /users/upload/{type}:
+        post:
+            summary: Upload file
+            description: Endpoint to upload a file for the authenticated user.
+            parameters:
+                - in: path
+                  name: type
+                  required: true
+                  schema:
+                      type: string
+            requestBody:
+                required: true
+                content:
+                    multipart/form-data:
+                        schema:
+                            type: object
+                            properties:
+                                file:
+                                    type: string
+                                    format: binary
+            responses:
+                "200":
+                    description: File uploaded successfully
+                "400":
+                    description: Invalid request payload
+                "401":
+                    description: Unauthorized access
+                "500":
+                    description: Internal server error
+
+    /users/download/{type}:
+        get:
+            summary: Download file
+            description: Endpoint to download a file for the authenticated user.
+            parameters:
+                - in: path
+                  name: type
+                  required: true
+                  schema:
+                      type: string
+            responses:
+                "200":
+                    description: File downloaded successfully
                 "401":
                     description: Unauthorized access
                 "500":
