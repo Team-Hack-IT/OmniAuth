@@ -10,6 +10,7 @@ type User = {
     updatedAt?: Date;
     history?: object;
     country?: string;
+	document?: object;
 };
 
 export default User;
