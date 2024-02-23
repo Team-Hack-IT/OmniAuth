@@ -4,7 +4,7 @@ import User from "../api/model/User";
 type RequestWithUser = {
     subject: string;
     token: string;
-    user: User | null;
+    user: User;
 } & Request;
 
 export default RequestWithUser;

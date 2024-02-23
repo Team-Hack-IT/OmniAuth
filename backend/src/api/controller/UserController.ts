@@ -14,18 +14,18 @@ const profile = async (req: RequestWithUser, res: Response) => {
 const createUser = async (req: RequestWithUser, res: Response) => {
     connectDB()
         .then(async (store) => {
-            const session = store.openSession();
-            const user: User | null = await session.load(req.subject);
-
-            if (user) {
-                res.status(409).json({ error: "User already exists" });
-                return;
-            }
-
             const { firstname, lastname, email, role, country } = req.body;
 
             if (!firstname || !lastname || !email || !role || !country) {
                 res.status(400).json({ error: "Bad Request" });
+                return;
+            }
+
+            const session = store.openSession();
+            const user = await session.load<User>(req.subject);
+
+            if (user) {
+                res.status(409).json({ error: "User already exists" });
                 return;
             }
 
@@ -37,6 +37,7 @@ const createUser = async (req: RequestWithUser, res: Response) => {
                 country,
                 createdAt: new Date(),
             };
+
             session.store(newUser, req.subject);
             session.saveChanges();
             res.status(201).json({ message: "User created" });
@@ -50,9 +51,8 @@ const createUser = async (req: RequestWithUser, res: Response) => {
 const updateUser = async (req: RequestWithUser, res: Response) => {
     connectDB()
         .then(async (store) => {
-            const user: User | null = await store
-                .openSession()
-                .load(req.subject);
+            const session = store.openSession();
+            const user = await session.load<User>(req.subject);
             const validKeys = [
                 "firstname",
                 "lastname",
@@ -77,7 +77,6 @@ const updateUser = async (req: RequestWithUser, res: Response) => {
                 }
             }
 
-            const session = store.openSession();
             session.store(user, req.subject);
             session.saveChanges();
             res.status(200).json({ message: "User updated" });
@@ -90,18 +89,20 @@ const updateUser = async (req: RequestWithUser, res: Response) => {
 
 const deleteUser = async (req: RequestWithUser, res: Response) => {
     try {
-        if (!req.user?.email) {
+        const { email } = req.body;
+
+        if (!email) {
             res.status(500).json({ error: "Internal Server Error" });
             return;
         }
 
-        await descopeClient?.management.user.delete(req.user.email);
+        await descopeClient?.management.user.delete(email);
         await descopeClient?.logoutAll(req.token);
 
         connectDB()
             .then(async (store) => {
                 const session = store.openSession();
-                const user: User | null = await session.load(req.subject);
+                const user = await session.load<User>(req.subject);
                 if (user) {
                     session.delete(user);
                     session.saveChanges();
@@ -122,24 +123,26 @@ const deleteUser = async (req: RequestWithUser, res: Response) => {
 
 const updateEmail = async (req: RequestWithUser, res: Response) => {
     try {
-        if (!req.body.email || req.body.length > 1) {
+        const { email } = req.body;
+
+        if (!email || req.body.length > 1) {
             res.status(400).json({ error: "Bad Request" });
             return;
         }
 
         await descopeClient?.management.user.updateEmail(
             req.token,
-            req.body.email,
+            email,
             true
         );
+
         connectDB()
             .then(async (store) => {
-                const user: User | null = await store
-                    .openSession()
-                    .load(req.subject);
+                const session = store.openSession();
+                const user = await session.load<User>(req.subject);
+
                 if (user) {
-                    const session = store.openSession();
-                    user.email = req.body.email;
+                    user.email = email;
                     session.store(user);
                     session.saveChanges();
                     res.status(200).json({ message: "Email updated" });
@@ -151,7 +154,6 @@ const updateEmail = async (req: RequestWithUser, res: Response) => {
                 console.error("Error loading user: ", error);
                 res.status(500).json({ error: "Internal Server Error" });
             });
-        res.status(200).json({ message: "Email updated" });
     } catch (error) {
         console.error("Error Updating User", error);
         res.status(500).json({ error: "Internal Server Error" });
@@ -160,29 +162,31 @@ const updateEmail = async (req: RequestWithUser, res: Response) => {
 
 const verifyPhone = async (req: RequestWithUser, res: Response) => {
     try {
-        if (!req.body.phone || req.body.length > 1) {
+        const { phone } = req.body;
+
+        if (phone || req.body.length > 1) {
             res.status(400).json({ error: "Bad Request" });
             return;
         }
-        if (!req.user?.email) {
+        if (!req.user.email) {
             res.status(500).json({ error: "Internal Server Error" });
             return;
         }
 
-        await descopeClient?.otp.verify.sms(req.user.email, req.body.phone);
+        await descopeClient?.otp.verify.sms(req.user.email, phone);
         connectDB()
             .then(async (store) => {
                 const session = store.openSession();
-                const user: User | null = await session.load(req.subject);
+                const user = await session.load<User>(req.subject);
 
-                if (!user) {
+                if (user) {
+                    user.phone = phone;
+                    session.store(user, req.subject);
+                    session.saveChanges();
+                    res.status(200).json({ message: "Phone number verified" });
+                } else {
                     res.status(404).json({ error: "User not found" });
-                    return;
                 }
-                user.phone = req.body.phone;
-                session.store(user, req.subject);
-                session.saveChanges();
-                res.status(200).json({ message: "Phone number verified" });
             })
             .catch((error) => {
                 console.error("Error creating user: ", error);
@@ -197,9 +201,7 @@ const verifyPhone = async (req: RequestWithUser, res: Response) => {
 const setPassword = async (req: RequestWithUser, res: Response) => {
     connectDB()
         .then(async (store) => {
-            const user: User | null = await store
-                .openSession()
-                .load(req.subject);
+            const user = await store.openSession().load<User>(req.subject);
 
             if (!user) {
                 res.status(404).json({ error: "User not found" });
@@ -235,7 +237,7 @@ const updatePassword = async (req: RequestWithUser, res: Response) => {
             return;
         }
         await descopeClient?.management.user.setPassword(
-            req.user?.email as string,
+            req.user.email as string,
             req.body.password
         );
         setPassword(req, res);

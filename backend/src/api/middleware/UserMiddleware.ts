@@ -18,8 +18,10 @@ export async function UserMiddleware(
                 const { "@metadata": metadata, id, ...updatedUser } = user;
                 const updatedAt = metadata ? metadata["@last-modified"] : null;
                 req.user = { id, ...updatedUser, updatedAt };
+                session.dispose();
                 next();
             } else {
+                session.dispose();
                 res.status(404).json({ error: "Not Found" });
             }
         }

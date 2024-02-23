@@ -191,7 +191,6 @@ const uploadFile = async (req: RequestWithUser, res: Response) => {
                             type: attachmentId,
                         };
 
-                        session.dispose();
                         session.saveChanges();
                         res.status(201).json({ message: "File uploaded" });
                     })
@@ -210,8 +209,9 @@ const uploadFile = async (req: RequestWithUser, res: Response) => {
 
 const downloadFile = async (req: RequestWithUser, res: Response) => {
     try {
+        const { document } = req.user;
         const { type } = req.params;
-        if (!req.user || !req.user.document || !(type in req.user.document)) {
+        if (!req.user || !document || !(type in document)) {
             res.status(404).json({ error: "Not Found" });
             return;
         }
