@@ -1,3 +1,7 @@
 .env
-node_modules
-build
+.env.sample
+node_modules/
+build/
+*.pfx
+*.txt
+.env.local

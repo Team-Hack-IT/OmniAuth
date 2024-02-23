@@ -1,62 +1,44 @@
 
 import './App.css'
-import { useCallback } from 'react'
 
-import { useDescope, useSession, useUser } from '@descope/react-sdk'
-import { Descope } from '@descope/react-sdk'
-import { getSessionToken } from '@descope/react-sdk';
-
+import { Routes, Route } from 'react-router-dom';
+import Login from './pages/login/Login';
+import Home from './components/Home';
+import Dashboard from './pages/dashboard/Dashboard';
+import { DataContext } from './context/FormContext';
+import IndividualOnboarding from './pages/onboarding/IndividualOnboarding';
+import Onboarding from './pages/onboarding/Onboarding';
+import Verification from './pages/verification/Verification';
+import IndividualVerification from './pages/Individual/IndividualVerification';
+import NotFoundPage from './pages/Error/404Page';
+import GenerateKey from './pages/dashboard/GenerateKey';
+import Protected from './components/Protected';
+import Logout from './pages/logout/Logout';
 
 function App() {
- 
-  const { isAuthenticated, isSessionLoading } = useSession()
-  const { user, isUserLoading } = useUser()
-  const { logout } = useDescope()
 
-  const exampleFetchCall = async () => {
-    const sessionToken = getSessionToken();
-
-    // example fetch call with authentication header
-    fetch('your_application_server_url', {
-      headers: {
-        Accept: 'application/json',
-        Authorization: 'Bearer ' + sessionToken,
-      }
-    })
-  }
-
-  const handleLogout = useCallback(() => {
-    logout()
-  }, [logout])
 
   return (
-    <>
-     
-     <h1>Welcome to Omni Auth</h1>
-     {!isAuthenticated &&
-      (
-        <Descope
-          flowId="sign-up-or-in"
-          onSuccess={(e) => console.log(e.detail.user)}
-          onError={(e) => console.log('Could not log in!')}
-        />
-      )
-    }
+ 
+  <Routes>
+  <Route path="/*" element={<NotFoundPage />} />
+    <Route path="/login" element={<Login />} />
+   
+    <Route element={<Protected/>} >
+    <Route path="/dashboard" element={<Home><Dashboard /></Home>} />
+    <Route path="/onboarding" element={<Home><Onboarding /></Home>} />
+    <Route path="/individual-onboarding" element={<Home><IndividualOnboarding /></Home>} />
+    <Route path="/verification" element={<Home><Verification /></Home>} />
+    <Route path="/individual-verification" element={<Home><IndividualVerification /></Home>} />
+    <Route path="/generate-key" element={<Home><GenerateKey /></Home>} />
+    <Route path="/logout" element={<Home><Logout /></Home>} />
 
-    {
-      (isSessionLoading || isUserLoading) && <p>Loading...</p>
-    }
+    </Route>
 
-    {!isUserLoading && isAuthenticated &&
-      (
-        <>
-          <p>Hello {user.name}</p>
-          <div>My Private Component</div>
-          <button onClick={handleLogout}>Logout</button>
-        </>
-      )
-    }
-    </>
+
+    
+  </Routes>
+
   )
 }
 
