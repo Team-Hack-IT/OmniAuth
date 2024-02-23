@@ -4,7 +4,7 @@ info:
     description: Documentation for the endpoint of the omni auth user API
     version: 1.0.0
 paths:
-    /users/create:
+    /signup:
         post:
             summary: Create a new user
             description: Endpoint to create a new user.
@@ -30,7 +30,7 @@ paths:
                 "500":
                     description: Internal server error
 
-    /profile:
+    /users/profile:
         get:
             summary: Get user profile
             description: Endpoint to get the profile of the authenticated user.
@@ -151,7 +151,7 @@ paths:
             example:
                 phoneNumber: +1234567890
 
-    /logoutall:
+    /users/logoutall:
         get:
             summary: Logout from all devices
             description: Endpoint to logout the authenticated user from all devices.
@@ -163,7 +163,7 @@ paths:
                 "500":
                     description: Internal server error
 
-    /logout:
+    /users/logout:
         get:
             summary: Logout
             description: Endpoint to logout the authenticated user.

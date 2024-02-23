@@ -1,0 +1,51 @@
+
+
+.footer2 {
+    background-color: #156064;
+    display:flex;
+    justify-content:space-around;
+    padding:14px;
+    flex-direction: row;
+    height: 300px;
+}
+
+.footer2 h1{
+    color: #DEE9E9;
+    font-family: Poppins;
+    font-size: 14px;
+    font-style: normal;
+    font-weight: 300;
+    line-height: normal;
+}
+
+.OurSolutions {
+    display:flex;
+    justify-content: space-around;
+    padding:60px;
+    flex-direction: column;
+
+}
+
+.Resources {
+    display:flex;
+    justify-content: space-around;
+    padding:60px;
+    flex-direction: column;
+}
+
+.FollowUs {
+    display:flex;
+    justify-content:baseline;
+    padding-top:70px;
+    flex-direction: column;
+}
+
+.footer2 a{
+    text-decoration: none;
+    color: #DEE9E9;
+    font-family: Inter;
+    font-size: 12px;
+    font-style: normal;
+    font-weight: 50;
+    line-height: normal;
+}

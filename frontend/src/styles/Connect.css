@@ -1,0 +1,23 @@
+.Connect {
+    background-color:rgba(21, 96, 100, 0.14) ;
+    height:160px;
+    display: flex;
+    flex-direction: column;
+}
+
+.Connect h1 {
+    display: flex;
+    justify-content: center;
+    color: rgba(0, 0, 0, 0.80);
+    font-family: 'inter';
+    font-size: 23px;
+    font-style: normal;
+    font-weight: 700;
+    line-height: normal;
+    flex-shrink: 0;
+}
+
+.EmailOutBox{
+    display: flex;
+    justify-content: center;
+}
