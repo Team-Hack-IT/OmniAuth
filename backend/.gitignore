@@ -1,6 +1,8 @@
+.env
 node_modules/
 build/
 *.pfx
 *.txt
 .env
 .env.local
+.DS_Store
