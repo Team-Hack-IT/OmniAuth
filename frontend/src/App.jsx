@@ -14,6 +14,9 @@ import GenerateKey from './pages/dashboard/GenerateKey';
 import Protected from './components/Protected';
 import Logout from './pages/logout/Logout';
 import LandingPage from './pages/landingpage/LandingPage';
+import Solutions from './components/Solutions';
+import Resources from './components/Resources';
+import About from './components/About';
 
 function App() {
 
@@ -23,6 +26,10 @@ function App() {
   <Routes>
   <Route path="/*" element={<NotFoundPage />} />
   <Route path="/" element={<LandingPage/>} />
+  <Route path="/solutions" element={<Solutions />} />
+  <Route path="/resources" element={<Resources />} />
+  <Route path="/about-us" element={<About />} />
+  {/* <Route path="/resources" element={</>} /> */}
 
     <Route path="/login" element={<Login />} />
    

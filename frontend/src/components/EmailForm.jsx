@@ -1,5 +1,5 @@
 import  {useState} from 'react';
-import "../styles/EmailForm.css"
+
 
 const EmailForm = () => {
     const [email, setEmail] = useState('');
@@ -10,17 +10,16 @@ const EmailForm = () => {
         console.log(`Email entered: ${email}`);
     };
     return (
-        <section className='EmailBox'>
-            <label>
-                <input
+        <section className='flex  gap-4'>
+            
+            <input
                     type="email"
                     value={email}
                     onChange={handleInputChange}
-                    placeholder="Input your email"
-                    style={{border: 'none'}}
+                    placeholder="Join our newsletter"
+                    className=" rounded-full p-2"
                 />
-            </label>
-            <button onClick={handleGetStarted}>Get Started</button>
+            <button onClick={handleGetStarted} className='bg-secondary p-2 rounded-full'>Get Started</button>
         </section>
     );
 };
