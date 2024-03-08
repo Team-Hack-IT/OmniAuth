@@ -11,7 +11,7 @@ let store: DocumentStore | null = null;
  * If a DocumentStore instance already exists, it will be returned without creating a new one.
  * @returns A Promise that resolves to a DocumentStore instance.
  */
-export async function connectDB(): Promise<DocumentStore> {
+async function connectDB(): Promise<DocumentStore> {
     return new Promise((resolve, reject) => {
         if (store) {
             resolve(store);
@@ -32,6 +32,7 @@ export async function connectDB(): Promise<DocumentStore> {
             store.on("error", (err) => {
                 store?.dispose();
                 store = null;
+                console.log("Failed to connect to Database ", err);
                 reject(err);
             });
 
@@ -40,3 +41,5 @@ export async function connectDB(): Promise<DocumentStore> {
         }
     });
 }
+
+export default connectDB;

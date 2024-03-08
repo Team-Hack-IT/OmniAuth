@@ -6,7 +6,7 @@ async function UserMiddleware(
     res: Response,
     next: NextFunction
 ): Promise<void> {
-    if (await BaseModelMiddleware(req, res, "User")) {
+    if (await BaseModelMiddleware(req, res, "Business")) {
         next();
     }
 }

@@ -1,9 +1,8 @@
-import { Response, NextFunction } from "express";
-import RequestWithUser from "../../types/request";
+import { Response, Request, NextFunction } from "express";
 import connectDescope from "../../config/descope.config";
 
 export async function sessionMiddleware(
-    req: RequestWithUser,
+    req: Request,
     res: Response,
     next: NextFunction
 ): Promise<void> {
@@ -20,7 +19,6 @@ export async function sessionMiddleware(
             res.status(500).json({ error: "Internal Server Error" });
             return;
         }
-
         const authInfo = await descopeClient.validateSession(token);
 
         console.log(

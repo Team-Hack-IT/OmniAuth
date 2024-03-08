@@ -1,7 +1,10 @@
 import { Response, NextFunction } from "express";
 import { sessionMiddleware } from "../api/middleware/SessionMiddleware";
 import { describe, beforeEach, it } from "node:test";
-import RequestWithUser from "../types/request";
+import RequestWithUser from "../types/custom";
+import dotenv from "dotenv";
+
+dotenv.config();
 
 describe("SessionMiddleware Test", () => {
     let req: RequestWithUser;
@@ -11,12 +14,9 @@ describe("SessionMiddleware Test", () => {
     beforeEach(() => {
         req = {
             headers: {
-                authorization: "Bearer token123",
+                authorization: process.env.TOKEN || "",
             },
             ip: "127.0.0.1",
-            token: "",
-            subject: "",
-            user: null,
         } as RequestWithUser;
         res = {
             status: jest.fn().mockReturnThis(),

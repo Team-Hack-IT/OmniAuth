@@ -1,58 +1,28 @@
-import express, { Request, Response } from "express";
+import express from "express";
 import {
-    profile,
     createUser,
     updatePassword,
     updateEmail,
     deleteUser,
     updateUser,
     verifyPhone,
-    logoutAll,
-    logout,
+    verifyPassword,
 } from "../controller/UserController";
-import RequestWithUser from "../../types/request";
-import { UserMiddleware } from "../middleware/UserMiddleware";
+import { profile, logout, logoutAll } from "../controller/BaseController";
+import UserMiddleware from "../middleware/UserMiddleware";
 
 const router = express.Router();
 
-router.post("/signup", (req: Request, res: Response) =>
-    createUser(req as RequestWithUser, res)
-);
-
-router.use("/users", (req: Request, res: Response, next) => {
-    UserMiddleware(req as RequestWithUser, res, next);
-});
-
-router.get("/users/profile", (req: Request, res: Response) =>
-    profile(req as RequestWithUser, res)
-);
-
-router.post("/users/update-password", (req: Request, res: Response) =>
-    updatePassword(req as RequestWithUser, res)
-);
-
-router.post("/users/update-email", (req: Request, res: Response) =>
-    updateEmail(req as RequestWithUser, res)
-);
-
-router.delete("/users/delete", (req: Request, res: Response) =>
-    deleteUser(req as RequestWithUser, res)
-);
-
-router.post("/users/update", (req: Request, res: Response) =>
-    updateUser(req as RequestWithUser, res)
-);
-
-router.post("/users/verify-phone", (req: Request, res: Response) =>
-    verifyPhone(req as RequestWithUser, res)
-);
-
-router.get("/users/logoutall", (req: Request, res: Response) =>
-    logoutAll(req as RequestWithUser, res)
-);
-
-router.get("/users/logout", (req: Request, res: Response) =>
-    logout(req as RequestWithUser, res)
-);
+router.post("/signup", createUser);
+router.use("/users", UserMiddleware);
+router.get("/users/profile", profile);
+router.post("/users/update-password", updatePassword);
+router.post("/users/update-email", updateEmail);
+router.delete("/users/delete", deleteUser);
+router.post("/users/update", updateUser);
+router.post("/users/verify-password", verifyPassword);
+router.post("/users/verify-phone", verifyPhone);
+router.get("/users/logoutall", logoutAll);
+router.get("/users/logout", logout);
 
 export default router;

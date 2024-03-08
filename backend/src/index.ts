@@ -4,7 +4,6 @@ import cors from "cors";
 import helmet from "helmet";
 import yaml from "yamljs";
 import swaggerUi from "swagger-ui-express";
-import RequestWithUser from "./types/request";
 import { sessionMiddleware } from "./api/middleware/SessionMiddleware";
 import UserRoute from "./api/routes/UserRoute";
 import ServiceRoute from "./api/routes/ServiceRoute";
@@ -43,9 +42,7 @@ if (environment === "development") {
 const swaggerDocument = yaml.load("./src/docs/User.yaml");
 app.use("/api-docs", swaggerUi.serve, swaggerUi.setup(swaggerDocument));
 
-app.use((req, res, next) => {
-    sessionMiddleware(req as RequestWithUser, res, next);
-});
+app.use(sessionMiddleware);
 app.use(UserRoute);
 app.use(ServiceRoute);
 

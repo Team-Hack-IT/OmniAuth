@@ -1,7 +1,7 @@
 import { Response, NextFunction } from "express";
 import { UserMiddleware } from "../api/middleware/UserMiddleware";
 import { describe, beforeEach, it } from "node:test";
-import RequestWithUser from "../types/request";
+import RequestWithUser from "../types/custom";
 
 describe("UserMiddleware Test", () => {
     let req: RequestWithUser;
