@@ -8,7 +8,10 @@ export default {
     extend: {
       colors: {
         "primary": "#156164",
-        "button": "#33D0AE"
+        "secondary": "#33D0AE",
+        "tertiary" :"#156064",
+        "button": "#00C49A",
+        "background": "#15606424"
       },
       fontFamily: {
         "Inter": ["Inter", "sans-serif"],
