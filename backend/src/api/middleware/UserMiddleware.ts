@@ -6,8 +6,15 @@ async function UserMiddleware(
     res: Response,
     next: NextFunction
 ): Promise<void> {
-    if (await BaseModelMiddleware(req, res, "User")) {
-        next();
+    const data = await BaseModelMiddleware(req, res);
+
+    if (data) {
+        if ((data as { role: string }).role === "user") {
+            req.user = data;
+            next();
+        } else {
+            res.status(403).json({ error: "Forbidden" });
+        }
     }
 }
 

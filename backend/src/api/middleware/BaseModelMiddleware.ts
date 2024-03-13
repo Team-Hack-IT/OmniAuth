@@ -1,60 +1,37 @@
 import { Request, Response } from "express";
-import connectDB from "../../config/db.config";
-import User from "../model/User";
-import Business from "../model/Business";
+import supabase from "../../config/db.config";
+// import { getUser, saveUser } from "../../utils/redis";
 
 async function BaseModelMiddleware(
     req: Request,
-    res: Response,
-    modelType: string
-): Promise<Boolean> {
+    res: Response
+): Promise<object | null> {
     const sub = req.subject;
-    if (!sub) {
-        res.status(400).json({ error: "Bad Request" });
-        return false;
+    // // const user = await getUser(sub);
+
+    // if (user) {
+    //     return user;
+    // }
+
+    const { data, error } = await supabase
+        .from("users")
+        .select("*")
+        .eq("subject", sub);
+
+    if (error) {
+        res.status(500).json({ error: "Internal Server Error" });
+        return null;
     }
 
-    return connectDB()
-        .then(async (store) => {
-            const session = store.openSession();
-            let user: (User | (Business & { "@metadata": any })) | null = null;
+    if (data.length === 0) {
+        res.status(404).json({ error: "User Not Found" });
+        return null;
+    }
 
-            if (modelType === "User") {
-                user = await session.load<User>(sub);
-            } else if (modelType === "Business") {
-                user = await session.load<Business & { "@metadata": any }>(sub);
-            }
+    const { password, subject, ...rest } = data[0];
+    //await saveUser(sub, rest);
 
-            if (!user) {
-                session.dispose();
-                res.status(404).json({ error: "Not Found" });
-                return false;
-            }
-
-            if (
-                (modelType === "User" && user.role !== "user") ||
-                (modelType === "Business" && user.role !== "business")
-            ) {
-                session.dispose();
-                res.status(403).json({ error: "Forbidden" });
-                return false;
-            }
-
-            const {
-                "@metadata": metadata,
-                id,
-                ...updatedUser
-            } = user as Business & { "@metadata": any };
-            const updatedAt = metadata ? metadata["@last-modified"] : null;
-
-            req.user = { id, ...updatedUser, updatedAt };
-            session.dispose();
-            return true;
-        })
-        .catch(() => {
-            res.status(500).json({ error: "Internal Server Error" });
-            return false;
-        });
+    return rest;
 }
 
 export default BaseModelMiddleware;

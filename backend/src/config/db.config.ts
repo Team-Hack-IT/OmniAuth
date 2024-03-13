@@ -1,45 +1,12 @@
-import { DocumentStore } from "ravendb";
-import * as fs from "fs";
+import { createClient } from "@supabase/supabase-js";
+import { Database } from "../types/database.types";
 import dotenv from "dotenv";
 
 dotenv.config();
 
-let store: DocumentStore | null = null;
+const supabase = createClient<Database>(
+    process.env.SUPABASE_URL!,
+    process.env.SUPABASE_KEY!
+);
 
-/**
- * Connects to the database and returns a Promise that resolves to a DocumentStore instance.
- * If a DocumentStore instance already exists, it will be returned without creating a new one.
- * @returns A Promise that resolves to a DocumentStore instance.
- */
-async function connectDB(): Promise<DocumentStore> {
-    return new Promise((resolve, reject) => {
-        if (store) {
-            resolve(store);
-            return;
-        } else {
-            store = new DocumentStore(
-                process.env.DB_URL || "",
-                process.env.DB_NAME || "Omni"
-            );
-            const cert = fs.readFileSync(process.env.CERT_PATH || "");
-
-            store.authOptions = {
-                certificate: cert,
-                type: "pfx",
-            };
-            store.initialize();
-
-            store.on("error", (err) => {
-                store?.dispose();
-                store = null;
-                console.log("Failed to connect to Database ", err);
-                reject(err);
-            });
-
-            console.log("Connected to Database");
-            resolve(store!);
-        }
-    });
-}
-
-export default connectDB;
+export default supabase;

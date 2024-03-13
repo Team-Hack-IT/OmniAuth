@@ -6,7 +6,7 @@ import yaml from "yamljs";
 import swaggerUi from "swagger-ui-express";
 import { sessionMiddleware } from "./api/middleware/SessionMiddleware";
 import UserRoute from "./api/routes/UserRoute";
-import ServiceRoute from "./api/routes/ServiceRoute";
+//import ServiceRoute from "./api/routes/ServiceRoute";
 
 const app = express();
 const port = process.env.PORT || 3000;
@@ -44,7 +44,7 @@ app.use("/api-docs", swaggerUi.serve, swaggerUi.setup(swaggerDocument));
 
 app.use(sessionMiddleware);
 app.use(UserRoute);
-app.use(ServiceRoute);
+//app.use(ServiceRoute);
 
 app.use((req, res) => {
     res.status(404).json({ error: "Not Found" });

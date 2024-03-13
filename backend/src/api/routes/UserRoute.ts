@@ -18,7 +18,7 @@ router.use("/users", UserMiddleware);
 router.get("/users/profile", profile);
 router.post("/users/update-password", updatePassword);
 router.post("/users/update-email", updateEmail);
-router.delete("/users/delete", deleteUser);
+router.delete("/users/delete/", deleteUser);
 router.post("/users/update", updateUser);
 router.post("/users/verify-password", verifyPassword);
 router.post("/users/verify-phone", verifyPhone);

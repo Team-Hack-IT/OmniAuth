@@ -7,7 +7,6 @@ import {
     setPassword,
     validatePassword,
 } from "./BaseController";
-import Business from "../model/Business";
 
 const createBusiness = async (req: Request, res: Response) => {
     const {
@@ -42,7 +41,7 @@ const createBusiness = async (req: Request, res: Response) => {
         return;
     }
 
-    const newBusiness: Business = {
+    await create(req, res, "business", {
         name,
         email,
         address,
@@ -55,10 +54,7 @@ const createBusiness = async (req: Request, res: Response) => {
         description,
         tier,
         role: "business",
-        createdAt: new Date(),
-    };
-
-    await create(req, res, newBusiness);
+    });
 };
 
 const updateBusiness = async (req: Request, res: Response) => {
@@ -73,23 +69,23 @@ const updateBusiness = async (req: Request, res: Response) => {
         "postalCode",
         "industry",
     ];
-    await update(req, res, req.user as Business, validKeys);
+    await update(req, res, "business", validKeys);
 };
 
 const deleteBusiness = async (req: Request, res: Response) => {
-    await del(req, res, req.user as Business);
+    await del(req, res, "business");
 };
 
 const updateEmail = async (req: Request, res: Response) => {
-    await updateModelEmail(req, res, req.user as Business);
+    await updateModelEmail(req, res, "business");
 };
 
 const updatePassword = async (req: Request, res: Response) => {
-    await setPassword(req, res, req.user as Business);
+    await setPassword(req, res, "business");
 };
 
 const verifyPassword = async (req: Request, res: Response) => {
-    await validatePassword(req, res, req.user as Business);
+    await validatePassword(req, res);
 };
 
 export {

@@ -1,117 +1,117 @@
 import { Request, Response } from "express";
 import bcrypt from "bcrypt";
 import connectDescope from "../../config/descope.config";
-import connectDB from "../../config/db.config";
-import Business from "../model/Business";
-import User from "../model/User";
-
-const descopeClient = connectDescope();
+import * as querystring from "querystring";
+import supabase from "../../config/db.config";
 
 const profile = async (req: Request, res: Response) => {
-    res.json(req.user);
+    res.status(200).json(req.user);
 };
 
-const create = async <T extends object>(
-    req: Request,
-    res: Response,
-    newUser: T
-): Promise<Boolean> => {
-    const sub = req.subject;
+const exists = async (req: Request, res: Response, table: string) => {
+    const { error, data } = await supabase
+        .from(table)
+        .select("*")
+        .eq("subject", req.subject);
 
-    if (!sub) {
-        res.status(400).json({ error: "Bad Request" });
+    if (error) {
+        console.error("Error creating user: ", error);
+        res.status(500).json({ error: "Internal Server Error" });
         return false;
     }
-    return connectDB()
-        .then(async (store) => {
-            const session = store.openSession();
-            const user = await session.load<T>(sub);
 
-            if (user) {
-                session.dispose();
-                res.status(409).json({ error: "Conflict" });
-                return false;
-            }
-
-            session.store(newUser, sub);
-            session.saveChanges();
-            session.dispose();
-            res.status(201).json({ message: "Created" });
-            return true;
-        })
-        .catch((error) => {
-            console.error("Error creating user: ", error);
-            res.status(500).json({ error: "Internal Server Error" });
-            return false;
-        });
+    if (data.length > 0) {
+        res.status(409).json({ error: "User already exists" });
+        return false;
+    }
 };
 
-const update = async <T extends object>(
+const create = async (
     req: Request,
     res: Response,
-    user: T,
+    table: string,
+    obj: object
+): Promise<Boolean> => {
+    if ((await exists(req, res, table)) === false) {
+        return false;
+    }
+
+    const { error } = await supabase.from(table).insert([
+        {
+            subject: req.subject,
+            ...obj,
+        },
+    ]);
+
+    if (error) {
+        console.error("Error creating user: ", error);
+        res.status(500).json({ error: "Internal Server Error" });
+        return false;
+    }
+
+    res.status(201).json({ message: "Created" });
+    return true;
+};
+
+const update = async (
+    req: Request,
+    res: Response,
+    table: string,
     validAttr: string[]
 ): Promise<Boolean> => {
-    const sub = req.subject;
-
-    if (!sub) {
-        res.status(400).json({ error: "Bad Request" });
-        return false;
-    }
-
     for (const key in req.body) {
         let index = validAttr.indexOf(key);
         if (index === -1) {
             res.status(400).json({ error: "Bad Request" });
             return false;
-        } else {
-            let attr = validAttr[index];
-            (user as any)[attr] = key;
         }
     }
 
-    return connectDB()
-        .then(async (store) => {
-            const session = store.openSession();
-            session.store(user, sub);
-            session.saveChanges();
-            session.dispose();
-            res.status(201).json({ message: "Updated" });
-            return true;
-        })
-        .catch(() => {
-            res.status(500).json({ error: "Internal Server Error" });
-            return false;
-        });
+    const { error } = await supabase
+        .from(table)
+        .update(req.body)
+        .eq("subject", req.subject);
+
+    if (error) {
+        res.status(500).json({ error: "Internal Server Error" });
+        return false;
+    }
+
+    res.status(200).json({ message: "Updated" });
+    return true;
 };
 
 const del = async (
     req: Request,
     res: Response,
-    user: User | Business
+    table: string
 ): Promise<Boolean> => {
     try {
-        if (!req.body.email || !req.token || !user) {
+        const email = querystring.escape(req.query.email as string);
+
+        if (!email) {
             res.status(400).json({ error: "Bad Request" });
             return false;
         }
 
-        await descopeClient?.management.user.delete(req.body.email);
-        await descopeClient?.logoutAll(req.token);
+        const descopeClient = connectDescope(res);
+        if (!descopeClient) {
+            return false;
+        }
 
-        return connectDB()
-            .then(async (store) => {
-                const session = store.openSession();
-                session.delete(user);
-                session.saveChanges();
-                session.dispose();
-                res.status(200).json({ message: "Deleted" });
-                return true;
-            })
-            .catch(() => {
-                res.status(500).json({ error: "Internal Server Error" });
-                return false;
-            });
+        await descopeClient.management.user.delete(email);
+        await descopeClient.logoutAll(req.token);
+
+        const { error } = await supabase
+            .from(table)
+            .delete()
+            .eq("subject", req.subject);
+
+        if (error) {
+            res.status(500).json({ error: "Internal Server Error" });
+            return false;
+        }
+        return true;
     } catch (error) {
         console.error("Error deleting user: ", error);
         res.status(500).json({ error: "Internal Server Error" });
@@ -122,7 +122,7 @@ const del = async (
 const updateModelEmail = async (
     req: Request,
     res: Response,
-    user: User | Business
+    table: string
 ): Promise<Boolean> => {
     try {
         const { email } = req.body;
@@ -131,25 +131,24 @@ const updateModelEmail = async (
             return false;
         }
 
-        await descopeClient?.management.user.updateEmail(
-            req.token,
-            email,
-            true
-        );
+        const descopeClient = connectDescope(res);
+        if (!descopeClient) {
+            return false;
+        }
 
-        return connectDB()
-            .then(async (store) => {
-                const session = store.openSession();
-                user.email = email;
-                session.store(user);
-                session.saveChanges();
-                res.status(200).json({ message: "Email Updated" });
-                return true;
-            })
-            .catch(() => {
-                res.status(500).json({ error: "Internal Server Error" });
-                return false;
-            });
+        await descopeClient.management.user.updateEmail(req.token, email, true);
+
+        const { error } = await supabase
+            .from(table)
+            .update({ email })
+            .eq("subject", req.subject);
+
+        if (error) {
+            res.status(500).json({ error: "Internal Server Error" });
+            return false;
+        }
+
+        return true;
     } catch (error) {
         console.error("Error Updating User", error);
         res.status(500).json({ error: "Internal Server Error" });
@@ -160,43 +159,34 @@ const updateModelEmail = async (
 const setPassword = async (
     req: Request,
     res: Response,
-    user: User | Business
+    table: string
 ): Promise<Boolean> => {
-    if (!req.body.password || req.body.length > 1) {
+    const { email } = req.user;
+    const { password } = req.body;
+    if (!password || !email || Object.keys(req.body).length != 1) {
         res.status(400).json({ error: "Bad Request" });
         return false;
     }
 
     try {
-        await descopeClient?.management.user.setPassword(
-            user.email,
-            req.body.password
-        );
-        return connectDB()
-            .then(async (store) => {
-                return await bcrypt
-                    .hash(req.body.password, 12)
-                    .then((hash) => {
-                        const session = store.openSession();
-                        user.password = hash;
-                        session.store(user);
-                        session.saveChanges();
-                        session.dispose();
-                        res.status(200).json({ message: "Password updated" });
-                        return true;
-                    })
-                    .catch((error) => {
-                        console.error("Error hashing password: ", error);
-                        res.status(500).json({
-                            error: "Internal Server Error",
-                        });
-                        return false;
-                    });
-            })
-            .catch(() => {
-                res.status(500).json({ error: "Internal Server Error" });
-                return false;
-            });
+        const descopeClient = connectDescope(res);
+        if (!descopeClient) {
+            return false;
+        }
+
+        await descopeClient.management.user.setPassword(email, password);
+
+        const { error } = await supabase
+            .from(table)
+            .update({ password: await bcrypt.hash(password, 12) })
+            .eq("subject", req.subject);
+
+        if (error) {
+            res.status(500).json({ error: "Internal Server Error" });
+            return false;
+        }
+
+        return true;
     } catch (error) {
         console.error("Error setting password: ", error);
         res.status(500).json({ error: "Internal Server Error" });
@@ -206,16 +196,25 @@ const setPassword = async (
 
 const validatePassword = async (
     req: Request,
-    res: Response,
-    user: User | Business
+    res: Response
 ): Promise<Boolean> => {
-    if (!req.body.password || !user || !user.password) {
+    const { data, error } = await supabase
+        .from("users")
+        .select("password")
+        .eq("subject", req.subject);
+
+    if (error) {
+        console.error("Error getting user: ", error);
+        res.status(500).json({ error: "Internal Server Error" });
+    }
+
+    if (!data || !data[0].password || !req.body.password) {
         res.status(400).json({ error: "Bad Request" });
         return false;
     }
 
-    if (await bcrypt.compare(req.body.password, user.password)) {
-        res.status(200).json({ message: "Password is correct" });
+    if (await bcrypt.compare(req.body.password, data[0].password)) {
+        res.status(200).json({ message: "Password validated" });
         return true;
     } else {
         res.status(401).json({ error: "Unauthorized" });
@@ -225,7 +224,12 @@ const validatePassword = async (
 
 const logout = async (req: Request, res: Response) => {
     try {
-        await descopeClient?.logout(req.token);
+        const descopeClient = connectDescope(res);
+
+        if (!descopeClient) {
+            return;
+        }
+        await descopeClient.logout(req.token);
         res.json({ message: "Logged out" });
     } catch (error) {
         console.error("Error logging out: ", error);
@@ -235,7 +239,12 @@ const logout = async (req: Request, res: Response) => {
 
 const logoutAll = async (req: Request, res: Response) => {
     try {
-        await descopeClient?.logoutAll(req.token);
+        const descopeClient = connectDescope(res);
+
+        if (!descopeClient) {
+            return;
+        }
+        await descopeClient.logoutAll(req.token);
         res.json({ message: "Logged out" });
     } catch (error) {
         console.error("Error logging out: ", error);

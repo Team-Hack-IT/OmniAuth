@@ -1,57 +1,143 @@
-import DocumentStore, {
-    IDocumentSession,
-    PutAttachmentOperation,
-} from "ravendb";
 import { v4 as uuidv4 } from "uuid";
+import supabase from "../config/db.config";
 
-const getFileFromDB = async (
-    session: IDocumentSession,
-    documentId: string,
-    attachmentId: string
-): Promise<Buffer | null> => {
-    try {
-        const attachmentResult = await session.advanced.attachments.get(
-            documentId,
-            attachmentId
-        );
+const getFile = async (attachmentId: string) => {
+    const { data, error } = await supabase.storage
+        .from(`public/${attachmentId}`)
+        .download(attachmentId);
 
-        if (!attachmentResult) {
-            console.error(
-                `Attachment ${attachmentId} not found for document ${documentId}`
-            );
-            return null;
-        }
-        return Buffer.from(attachmentResult.data.toString());
-    } catch (error) {
-        console.error("Error fetching attachment:", error);
+    if (error) {
         return null;
     }
+
+    return data;
 };
 
-const saveFileToDB = async (
-    store: DocumentStore,
-    fileBuffer: Buffer,
-    documentId: string,
-    contentType: string
-): Promise<string> => {
+const createAttachmentId = async (
+    contentType: string,
+    allowedTypes: string[]
+) => {
     const attachmentId = `${uuidv4()}}.${contentType.match(/\/([^/]+)$/)?.[1]}`;
 
-    try {
-        await store.operations.send(
-            new PutAttachmentOperation(
-                documentId,
-                attachmentId,
-                fileBuffer,
-                contentType
-            )
-        );
-        return Promise.resolve(attachmentId);
-    } catch (error) {
-        console.error(error);
-    } finally {
-        store.dispose();
+    const { error } = await supabase.storage.createBucket(attachmentId, {
+        public: true,
+        fileSizeLimit: 1000000,
+        allowedMimeTypes: allowedTypes,
+    });
+
+    if (error) {
+        return null;
     }
-    return Promise.reject();
+
+    return attachmentId;
+};
+const uploadFile = async (
+    file: any,
+    contentType: string,
+    allowedTypes: string[]
+): Promise<string | null> => {
+    const attachmentId = await createAttachmentId(contentType, allowedTypes);
+
+    if (!attachmentId) {
+        return null;
+    }
+
+    const { error } = await supabase.storage
+        .from(attachmentId)
+        .upload(`public/${attachmentId}`, file, {
+            cacheControl: "3600",
+            upsert: false,
+        });
+
+    if (error) {
+        return null;
+    }
+
+    return attachmentId;
 };
 
-export { saveFileToDB, getFileFromDB };
+const saveFile = async (
+    user: any,
+    table: string,
+    sub: string,
+    file: any,
+    options: {
+        contentType: string;
+        allowedTypes: string[];
+        documentType?: string;
+        other?: any;
+    }
+): Promise<Boolean> => {
+    const fileId = uploadFile(file, options.contentType, options.allowedTypes);
+    let property: any;
+
+    if (!fileId) {
+        return false;
+    }
+
+    if (options.documentType) {
+        user.document[options.documentType] = fileId;
+        property = { document: user.document };
+    } else {
+        user[options.other] = fileId;
+        property = { [options.other]: fileId };
+    }
+
+    const { error } = await supabase
+        .from(table)
+        .update(property)
+        .eq("subject", sub);
+
+    if (error) {
+        return false;
+    }
+
+    return true;
+};
+
+const deleteFile = async (
+    attachmentId: string,
+    table: string,
+    sub: string,
+    user: any,
+    type: string
+) => {
+    const { data, error: storageError } = await supabase.storage
+        .from(attachmentId)
+        .remove([`public/${attachmentId}`]);
+
+    if (storageError) {
+        return false;
+    }
+
+    const { error } = await supabase.storage.deleteBucket(attachmentId);
+
+    if (error) {
+        return false;
+    }
+
+    delete user.document[type];
+
+    const { error: dbError } = await supabase
+        .from(table)
+        .update({ document: user.document })
+        .eq("id", sub);
+
+    if (dbError) {
+        return false;
+    }
+    return true;
+};
+
+const updateFile = async (attachmentId: string, file: Buffer) => {
+    const { error } = await supabase.storage
+        .from(attachmentId)
+        .update(`public/${attachmentId}`, file);
+
+    if (error) {
+        return false;
+    }
+
+    return true;
+};
+export { saveFile, getFile, deleteFile, updateFile };

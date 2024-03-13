@@ -15,7 +15,7 @@ const router = express.Router();
 router.post("/business/signup", createBusiness);
 router.use("/business", BusinessMiddleware);
 router.get("/business/profile", profile);
-router.post("/users/business/update-password", updatePassword);
+router.post("/business/update-password", updatePassword);
 router.post("/business/verify-password", verifyPassword);
 router.post("/business/update-email", updateEmail);
 router.delete("/business/delete", deleteBusiness);

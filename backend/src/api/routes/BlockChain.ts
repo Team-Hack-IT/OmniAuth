@@ -3,13 +3,16 @@ import {
     getUsageId,
     makeChainlinkRequest,
 } from "../services/BlockchainService";
+import BusinessMiddleware from "../middleware/BusinessMiddleware";
 
 const router = Router();
 
-router.get("/usageId", async (req, res) => {
+router.use("/business", BusinessMiddleware);
+
+router.get("/businsess/usage", async (req, res) => {
     try {
-        const result = await getUsageId();
-        res.json(result);
+        const usage = await getUsageId();
+        res.status(200).json(usage);
     } catch (error) {
         res.status(500).json({ error: "Internal Server Error" });
     }

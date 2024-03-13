@@ -1,15 +1,13 @@
 import { Response, Request } from "express";
-import { BufferObject } from "image-hash";
-import User from "../model/User";
-import  connectDB  from "../../config/db.config";
 import { compareImages, matchId } from "../../utils/image";
-import { getFileFromDB, saveFileToDB } from "../../utils/file";
+import * as fileService from "../../utils/file";
+import supabase from "../../config/db.config";
 
 const verifyId = async (req: Request, res: Response) => {
     const file = req.file?.buffer;
     const sub = req.subject;
     const { type } = req.params;
-    const user = req.user as User;
+    const user = req.user;
     const { document, picture } = user;
 
     if (!file || !type || !sub) {
@@ -22,114 +20,151 @@ const verifyId = async (req: Request, res: Response) => {
         return;
     }
 
-    connectDB().then(async (store) => {
-        const session = store.openSession();
-        const idCard = await getFileFromDB(
-            session,
-            sub,
-            document.idCard as string
-        );
-        const photo = await getFileFromDB(session, sub, picture);
+    const idCard = await fileService.getFile(document.idCard as string);
+    const photo = await fileService.getFile(picture as string);
 
-        if (!idCard || !photo) {
-            res.status(404).json({ error: "Not Found" });
-            return;
+    if (!idCard || !photo) {
+        res.status(404).json({ error: "Not Found" });
+        return;
+    }
+
+    const match = await matchId(user, file);
+    if (!match) {
+        if (user.isVerified) {
+            const { error } = await supabase
+                .from("users")
+                .update({ isVerified: false })
+                .eq("subject", sub);
+
+            if (error) {
+                res.status(500).json({ error: "Internal server error" });
+                return;
+            }
         }
+        return;
+    }
 
-        const match = await matchId(user, file);
-        if (!match) {
-            user.isVerified = false;
-            session.store(user, sub);
-            session.saveChanges();
-            session.dispose();
-            res.status(401).json({ verified: false });
-            return;
-        }
+    const looksSame = await compareImages(idCard, photo);
 
-        const idCardBufferObject: BufferObject = { data: idCard };
-        const pictureBufferObject: BufferObject = { data: photo };
-        const difference = await compareImages(
-            idCardBufferObject,
-            pictureBufferObject
-        );
+    if (looksSame) {
+        if (!user.isVerified) {
+            const { error } = await supabase
+                .from("users")
+                .update({ isVerified: true })
+                .eq("subject", sub);
 
-        if (difference && difference < 5) {
-            user.isVerified = true;
-            session.store(user, sub);
-            session.saveChanges();
-            session.dispose();
+            if (error) {
+                res.status(500).json({ error: "Internal server error" });
+                return;
+            }
             res.status(200).json({ verified: true });
-        } else {
-            session.dispose();
-            res.status(401).json({ verified: false });
         }
-    });
+    } else {
+        res.status(401).json({ verified: false });
+    }
 };
 
 const uploadFile = async (req: Request, res: Response) => {
-    const user = req.user as User;
-    const sub = req.subject;
+    const user = req.user;
+    const { type } = req.params;
     const file = req.file?.buffer;
+    const allowedFiles = ["idCard", "passport", "driverLicense", "picture"];
+    const allowedTypes = ["image/png", "image/jpeg", "image/jpg"];
+    const contentType = req.file?.mimetype;
 
-    if (!file || !user || !sub || req.body.contentType) {
+    if (
+        !file ||
+        !user ||
+        !contentType ||
+        !allowedTypes.includes(contentType) ||
+        !type ||
+        !allowedFiles.includes(type)
+    ) {
         res.status(400).json({ error: "Bad Request" });
         return;
     }
 
-    connectDB()
-        .then(async (store) => {
-            const session = store.openSession();
-            await saveFileToDB(store, file, sub, req.body.contentType)
-                .then((attachmentId) => {
-                    user.document = {
-                        ...user.document,
-                        type: attachmentId,
-                    };
-                    session.store(user, sub);
-                    session.saveChanges();
-                    session.dispose();
-                    res.status(201).json({ message: "File uploaded" });
-                })
-                .catch(() => {
-                    res.status(422).json({ error: "Unprocessable Entity" });
-                });
-        })
-        .catch((error) => {
-            console.error(error);
-            res.status(500).json({ error: "An error occurred" });
-        });
+    if (type in user.document) {
+        res.status(409).json({ error: "File already exists" });
+        return;
+    }
+
+    const saved = await fileService.saveFile(
+        user,
+        user.role,
+        req.subject,
+        file,
+        {
+            contentType,
+            allowedTypes,
+            documentType: type !== "picture" ? type : undefined,
+            other: type,
+        }
+    );
+
+    if (!saved) {
+        res.status(500).json({ error: "Internal Server Error" });
+        return;
+    }
+
+    res.status(201).json({ message: "File uploaded successfully" });
 };
 
 const downloadFile = async (req: Request, res: Response) => {
-    try {
-        const sub = req.subject;
-        const user = req.user as User;
-        const { type } = req.params;
-        const { document } = user;
+    const sub = req.subject;
+    const user = req.user;
+    const { type } = req.params;
+    const { document } = user;
 
-        if (!sub || !user || !document || !type) {
-            res.status(404).json({ error: "Not Found" });
-            return;
-        }
-
-        connectDB().then(async (store) => {
-            const session = store.openSession();
-            const file = await getFileFromDB(
-                session,
-                sub,
-                document[type as keyof typeof document]
-            );
-
-            if (file) {
-                res.status(200).send(file);
-            } else {
-                res.status(404).json({ error: "Not Found" });
-            }
-        });
-    } catch (error) {
-        console.error(error);
-        res.status(500).json({ error: "An error occurred" });
+    if (
+        !user ||
+        !sub ||
+        !document ||
+        (!(type in document) && type !== "picture")
+    ) {
+        res.status(404).json({ error: "Not Found" });
+        return;
     }
+
+    const file = await fileService.getFile(
+        type == "picture" ? user.picture : (document[type] as string)
+    );
+
+    if (!file) {
+        res.status(404).json({ error: "Not Found" });
+        return;
+    }
+
+    res.status(200).send(file);
 };
 
+const replaceFile = async (req: Request, res: Response) => {
+    const user = req.user;
+    const { type } = req.params;
+    const file = req.file?.buffer;
+    const allowedFiles = ["idCard", "passport", "driverLicense", "picture"];
+    const allowedTypes = ["image/png", "image/jpeg", "image/jpg"];
+    const contentType = req.file?.mimetype;
+
+    if (
+        !file ||
+        !user ||
+        !contentType ||
+        !allowedTypes.includes(contentType) ||
+        !type ||
+        !allowedFiles.includes(type)
+    ) {
+        res.status(400).json({ error: "Bad Request" });
+        return;
+    }
+
+    const updated = await fileService.updateFile(user.document[type], file);
+
+    if (!updated) {
+        res.status(500).json({ error: "Internal Server Error" });
+        return;
+    }
+
+    res.status(200).json({ message: "File updated successfully" });
+};
 export { verifyId, uploadFile, downloadFile };
