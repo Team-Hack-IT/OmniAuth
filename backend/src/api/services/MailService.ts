@@ -9,7 +9,7 @@ async function sendEmail(
     text: string,
     html: string
 ) {
-    let transporter = nodemailer.createTransport({
+    const transporter = nodemailer.createTransport({
         host: process.env.EMAIL_HOST,
         port: 587,
         secure: false,
@@ -23,7 +23,7 @@ async function sendEmail(
         },
     });
 
-    let mailOptions = {
+    const mailOptions = {
         from: process.env.EMAIL_FROM,
         to: recipient,
         subject: subject,
@@ -31,7 +31,7 @@ async function sendEmail(
         html: html,
     };
 
-    let info = await transporter.sendMail(mailOptions);
+    const info = await transporter.sendMail(mailOptions);
     console.log("Message sent: %s", info.messageId);
 }
 

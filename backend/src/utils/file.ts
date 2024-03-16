@@ -67,7 +67,7 @@ const saveFile = async (
         documentType?: string;
         other?: any;
     }
-): Promise<Boolean> => {
+): Promise<boolean> => {
     const fileId = uploadFile(file, options.contentType, options.allowedTypes);
     let property: any;
 

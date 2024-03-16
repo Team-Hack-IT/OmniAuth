@@ -1,66 +1,58 @@
-import { Response, Request } from "express";
+import { Response, Request, NextFunction } from "express";
 import { compareImages, matchId } from "../../utils/image";
 import * as fileService from "../../utils/file";
 import supabase from "../../config/db.config";
+import { BadRequest, Conflict, NotFound, ServerError } from "../../utils/error";
 
-const verifyId = async (req: Request, res: Response) => {
-    const file = req.file?.buffer;
-    const sub = req.subject;
-    const { type } = req.params;
-    const user = req.user;
-    const { document, picture } = user;
+const verifyId = async (req: Request, res: Response, next: NextFunction) => {
+    try {
+        const file = req.file?.buffer;
+        const sub = req.subject;
+        const { type } = req.params;
+        const user = req.user;
+        const { document, picture } = user;
 
-    if (!file || !type || !sub) {
-        res.status(400).json({ error: "Bad Request" });
-        return;
-    }
+        if (!file || !type || !sub) throw new BadRequest();
+        if (!user || !document || !("idCard" in document) || !picture)
+            throw new NotFound();
 
-    if (!user || !document || !("idCard" in document) || !picture) {
-        res.status(404).json({ error: "Not Found" });
-        return;
-    }
+        const idCard = await fileService.getFile(document.idCard as string);
+        const photo = await fileService.getFile(picture as string);
 
-    const idCard = await fileService.getFile(document.idCard as string);
-    const photo = await fileService.getFile(picture as string);
+        if (!idCard || !photo) throw new NotFound();
 
-    if (!idCard || !photo) {
-        res.status(404).json({ error: "Not Found" });
-        return;
-    }
+        if (!(await matchId(user, file))) {
+            if (user.isVerified) {
+                const { error } = await supabase
+                    .from("user")
+                    .update({ isVerified: false })
+                    .eq("id", req.user.id);
 
-    const match = await matchId(user, file);
-    if (!match) {
-        if (user.isVerified) {
-            const { error } = await supabase
-                .from("users")
-                .update({ isVerified: false })
-                .eq("subject", sub);
-
-            if (error) {
-                res.status(500).json({ error: "Internal server error" });
-                return;
+                if (error) {
+                    res.status(500).json({ error: "Internal server error" });
+                    return;
+                }
             }
+            return;
         }
-        return;
-    }
 
-    const looksSame = await compareImages(idCard, photo);
+        const looksSame = await compareImages(idCard, photo);
 
-    if (looksSame) {
-        if (!user.isVerified) {
-            const { error } = await supabase
-                .from("users")
-                .update({ isVerified: true })
-                .eq("subject", sub);
+        if (looksSame) {
+            if (!user.isVerified) {
+                const { error } = await supabase
+                    .from("user")
+                    .update({ isVerified: true })
+                    .eq("id", req.user.id);
 
-            if (error) {
-                res.status(500).json({ error: "Internal server error" });
-                return;
+                if (error) throw new ServerError();
+                res.status(200).json({ verified: true });
             }
-            res.status(200).json({ verified: true });
+        } else {
+            res.status(401).json({ verified: false });
         }
-    } else {
-        res.status(401).json({ verified: false });
+    } catch (error) {
+        next(error);
     }
 };
 
@@ -80,14 +72,10 @@ const uploadFile = async (req: Request, res: Response) => {
         !type ||
         !allowedFiles.includes(type)
     ) {
-        res.status(400).json({ error: "Bad Request" });
-        return;
+        throw new BadRequest();
     }
 
-    if (type in user.document) {
-        res.status(409).json({ error: "File already exists" });
-        return;
-    }
+    if (type in user.document) throw new Conflict("File already exists");
 
     const saved = await fileService.saveFile(
         user,
@@ -102,10 +90,7 @@ const uploadFile = async (req: Request, res: Response) => {
         }
     );
 
-    if (!saved) {
-        res.status(500).json({ error: "Internal Server Error" });
-        return;
-    }
+    if (!saved) throw new ServerError();
 
     res.status(201).json({ message: "File uploaded successfully" });
 };
@@ -122,18 +107,14 @@ const downloadFile = async (req: Request, res: Response) => {
         !document ||
         (!(type in document) && type !== "picture")
     ) {
-        res.status(404).json({ error: "Not Found" });
-        return;
+        throw new NotFound();
     }
 
     const file = await fileService.getFile(
         type == "picture" ? user.picture : (document[type] as string)
     );
 
-    if (!file) {
-        res.status(404).json({ error: "Not Found" });
-        return;
-    }
+    if (!file) throw new NotFound("File doesn't exist");
 
     res.status(200).send(file);
 };
@@ -167,4 +148,4 @@ const replaceFile = async (req: Request, res: Response) => {
 
     res.status(200).json({ message: "File updated successfully" });
 };
-export { verifyId, uploadFile, downloadFile };
+export { verifyId, uploadFile, downloadFile, replaceFile };

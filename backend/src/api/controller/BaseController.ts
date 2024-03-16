@@ -1,14 +1,19 @@
 import { NextFunction, Request, Response } from "express";
-import { loadData } from "../../utils/model";
-import { SdkResponse } from "@descope/node-sdk";
 import bcrypt from "bcrypt";
 import connectDescope from "../../config/descope.config";
 import supabase from "../../config/db.config";
 import * as querystring from "querystring";
+import {
+    BadRequest,
+    NotFound,
+    ServerError,
+    Unauthorized,
+} from "../../utils/error";
 
 const profile = async (req: Request, res: Response) => {
-    const [password, subject, ...rest] = req.user;
-    res.status(200).json(rest);
+    delete req.user.password;
+    delete req.user.subject;
+    res.status(200).json(req.user);
 };
 
 const del = async (req: Request, res: Response, next: NextFunction) => {
@@ -18,8 +23,8 @@ const del = async (req: Request, res: Response, next: NextFunction) => {
             /^[a-za-z0-9.!#$%&'*+/=?^_`{|}~-]+@[a-za-z0-9](?:[a-za-z0-9-]{0,61}[a-za-z0-9])?(?:\.[a-za-z0-9](?:[a-za-z0-9-]{0,61}[a-za-z0-9])?)*$/;
         const isValidEmail = pattern.test(email);
 
-        if (!email || !isValidEmail) throw new Error("Bad Request");
-        if (!email) throw new Error("Bad Request");
+        if (!email || !isValidEmail) throw new BadRequest();
+        if (!email) throw new BadRequest();
 
         const descopeClient = connectDescope();
         await descopeClient.logoutAll(req.token);
@@ -30,11 +35,11 @@ const del = async (req: Request, res: Response, next: NextFunction) => {
             .delete()
             .eq("id", req.user.id);
 
-        if (error) throw new Error("Internal Server Error");
+        if (error) throw new ServerError();
 
         res.status(200).json({ message: "Deleted" });
     } catch (error) {
-        throw new Error("Internal Server Error");
+        next(error);
     }
 };
 
@@ -45,8 +50,7 @@ const updateEmail = async (req: Request, res: Response, next: NextFunction) => {
             /^[a-za-z0-9.!#$%&'*+/=?^_`{|}~-]+@[a-za-z0-9](?:[a-za-z0-9-]{0,61}[a-za-z0-9])?(?:\.[a-za-z0-9](?:[a-za-z0-9-]{0,61}[a-za-z0-9])?)*$/;
         const isValidEmail = pattern.test(email);
 
-        if (!email || !req.token || !isValidEmail)
-            throw new Error("Bad Request");
+        if (!email || !req.token || !isValidEmail) throw new BadRequest();
 
         await connectDescope().magicLink.update.email(
             req.user.email,
@@ -59,7 +63,7 @@ const updateEmail = async (req: Request, res: Response, next: NextFunction) => {
             .update({ email })
             .eq("id", req.user.id);
 
-        if (error) throw new Error("Internal Server Error");
+        if (error) throw new ServerError();
 
         res.status(200).json({ message: "Email Successfully Updated" });
     } catch (error) {
@@ -77,7 +81,7 @@ const updatePassword = async (
             connectDescope()
                 .password.update(email, hash, token)
                 .catch(() => {
-                    throw new Error("Internal Server Error");
+                    throw new ServerError();
                 });
         });
         res.status(200).json({ message: "Password Updated Successfully" });
@@ -92,12 +96,11 @@ const resetPassword = async (
     next: NextFunction
 ) => {
     try {
-        await setPassword(req, (email: string, hash: string, token: string) => {
+        await setPassword(req, (email: string) => {
             connectDescope()
                 .password.sendReset(email, "http://omni-auth.vercel.app/")
-                .then((response) => {})
                 .catch(() => {
-                    throw new Error("Internal Server Error");
+                    throw new ServerError();
                 });
         });
         res.status(200).json({ message: "Password Succesfully Changed" });
@@ -106,7 +109,10 @@ const resetPassword = async (
     }
 };
 
-const setPassword = async (req: Request, cb: Function) => {
+const setPassword = async (
+    req: Request,
+    cb: (email: any, hash?: any, token?: any) => void
+) => {
     try {
         const { email } = req.user;
         const { password } = req.body;
@@ -146,17 +152,17 @@ const validatePassword = async (
     try {
         const { password } = req.user;
 
-        if (Object.keys(req.body).length != 1) throw new Error("Bad Request");
-        if (!password) throw new Error("Not Found");
+        if (Object.keys(req.body).length != 1) throw new BadRequest();
+        if (!password) throw new NotFound();
 
         await bcrypt
             .compare(req.body.password, password)
             .then((value) => {
-                if (!value) throw new Error("Unathorized");
+                if (!value) throw new Unauthorized();
                 return true;
             })
             .catch(() => {
-                throw new Error("Internal Server Error");
+                throw new ServerError();
             });
         res.status(200).json({ message: "Password Succesfully Validated" });
     } catch (error) {

@@ -2,6 +2,7 @@ import { NextFunction, Request, Response } from "express";
 import { create, update } from "../../utils/model";
 import connectDescope from "../../config/descope.config";
 import supabase from "../../config/db.config";
+import { BadRequest, ServerError } from "../../utils/error";
 
 const createUser = async (req: Request, res: Response, next: NextFunction) => {
     try {
@@ -26,10 +27,10 @@ const createUser = async (req: Request, res: Response, next: NextFunction) => {
             !birthDate ||
             Object.keys(req.body).length != 8
         ) {
-            throw new Error("Bad Request");
+            throw new BadRequest();
         }
 
-        await create(req.subject, "users", {
+        await create(req.subject, "user", {
             firstname,
             lastname,
             email,
@@ -87,7 +88,7 @@ const verifyPhone = async (req: Request, res: Response, next: NextFunction) => {
             .update({ phone })
             .eq("id", user.id);
 
-        if (error) throw new Error("Internal Server Error");
+        if (error) throw new ServerError();
 
         res.status(200).json({ message: "Phone Verified" });
     } catch (error) {

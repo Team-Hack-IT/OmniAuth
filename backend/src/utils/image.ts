@@ -14,7 +14,7 @@ const compareImages = async (image1: any, image2: any) => {
     }
 };
 
-const matchId = async (user: any, file: Buffer): Promise<Boolean> => {
+const matchId = async (user: any, file: Buffer): Promise<boolean> => {
     try {
         const {
             data: { text },

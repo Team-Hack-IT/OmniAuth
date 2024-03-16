@@ -1,5 +1,6 @@
-import DescopeClient, { descopeErrors } from "@descope/node-sdk";
+import DescopeClient from "@descope/node-sdk";
 import dotenv from "dotenv";
+import { ServerError } from "../utils/error";
 
 dotenv.config();
 
@@ -14,18 +15,7 @@ function connectDescope() {
             managementKey: process.env.MGT_KEY!,
         });
     } catch (error) {
-        switch (error) {
-            case descopeErrors.badRequest:
-            case descopeErrors.invalidRequest:
-            case descopeErrors.missingArguments:
-                throw new Error("Internal Server Error");
-
-            case descopeErrors.userNotFound:
-                throw new Error("User Not Found");
-
-            default:
-                throw new Error("Internal Server Error");
-        }
+        throw new ServerError();
     }
 }
 

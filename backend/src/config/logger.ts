@@ -31,6 +31,24 @@ const transports =
           ]
         : [new winston.transports.Console()];
 
+const exceptionHandlers =
+    process.env.NODE_ENV === "production"
+        ? [
+              new winston.transports.File({
+                  filename: "exceptions.log",
+              }),
+          ]
+        : [new winston.transports.Console()];
+
+const rejectionHandlers =
+    process.env.NODE_ENV === "production"
+        ? [
+              new winston.transports.File({
+                  filename: "rejections.log",
+              }),
+          ]
+        : [new winston.transports.Console()];
+
 const { combine, errors, timestamp, json } = winston.format;
 
 const logger = winston.createLogger({
@@ -38,16 +56,8 @@ const logger = winston.createLogger({
     format: combine(errors({ stack: true }), timestamp(), json()),
     defaultMeta: { service: "user-service" },
     transports: transports,
-    exceptionHandlers: [
-        new winston.transports.File({
-            filename: "exceptions.log",
-        }),
-    ],
-    rejectionHandlers: [
-        new winston.transports.File({
-            filename: "rejection.log",
-        }),
-    ],
+    exceptionHandlers: exceptionHandlers,
+    rejectionHandlers: rejectionHandlers,
 });
 
 logger.exitOnError = false;

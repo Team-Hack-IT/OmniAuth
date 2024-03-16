@@ -1,5 +1,6 @@
 import { NextFunction, Request, Response } from "express";
 import { create, update } from "../../utils/model";
+import { BadRequest } from "../../utils/error";
 
 const createBusiness = async (
     req: Request,
@@ -35,7 +36,7 @@ const createBusiness = async (
             !tier ||
             req.body.length !== 11
         ) {
-            throw new Error("Bad Request");
+            throw new BadRequest();
         }
 
         await create(req.subject, "business", {

@@ -1,10 +1,10 @@
-import express from "express";
+import express, { Request, Response } from "express";
 import cookieParser from "cookie-parser";
 import cors from "cors";
 import helmet from "helmet";
 import yaml from "yamljs";
 import swaggerUi from "swagger-ui-express";
-import { sessionMiddleware } from "./api/middleware/SessionMiddleware";
+import sessionMiddleware from "./api/middleware/SessionMiddleware";
 import UserRoute from "./api/routes/UserRoute";
 import errorMiddleware from "./api/middleware/ErrorMiddleware";
 
@@ -39,16 +39,15 @@ if (environment === "development") {
     app.use(cors());
 }
 
-const userDocument = yaml.load("./src/docs/User.yaml");
-const businessDocument = yaml.load("./src/docs/Business.yaml");
-const swaggerDocument = { ...userDocument, ...businessDocument };
-
-app.use("/api-docs", swaggerUi.serve, swaggerUi.setup(swaggerDocument));
-
+app.use(
+    "/api-docs",
+    swaggerUi.serve,
+    swaggerUi.setup(yaml.load("./src/docs/User.yaml"))
+);
 app.use(sessionMiddleware);
 app.use(UserRoute);
 
-app.use((req, res) => {
+app.use((req: Request, res: Response) => {
     res.status(404).json({ error: "Not Found" });
 });
 app.use(errorMiddleware);
