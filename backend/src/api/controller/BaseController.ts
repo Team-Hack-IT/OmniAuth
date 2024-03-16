@@ -1,254 +1,165 @@
-import { Request, Response } from "express";
+import { NextFunction, Request, Response } from "express";
+import { SdkResponse } from "@descope/node-sdk";
 import bcrypt from "bcrypt";
 import connectDescope from "../../config/descope.config";
 import * as querystring from "querystring";
 import supabase from "../../config/db.config";
+import loadData from "../../utils/loadData";
 
 const profile = async (req: Request, res: Response) => {
-    res.status(200).json(req.user);
+    const [password, subject, ...rest] = req.user;
+    res.status(200).json(rest);
 };
 
-const exists = async (req: Request, res: Response, table: string) => {
-    const { error, data } = await supabase
-        .from(table)
-        .select("*")
-        .eq("subject", req.subject);
+const create = async (subject: string, table: string, obj: object) => {
+    const data = await loadData(subject, table);
 
-    if (error) {
-        console.error("Error creating user: ", error);
-        res.status(500).json({ error: "Internal Server Error" });
-        return false;
-    }
-
-    if (data.length > 0) {
-        res.status(409).json({ error: "User already exists" });
-        return false;
-    }
-};
-
-const create = async (
-    req: Request,
-    res: Response,
-    table: string,
-    obj: object
-): Promise<Boolean> => {
-    if ((await exists(req, res, table)) === false) {
-        return false;
-    }
+    if (data) throw new Error("User already exists");
 
     const { error } = await supabase.from(table).insert([
         {
-            subject: req.subject,
+            subject: subject,
             ...obj,
         },
     ]);
 
-    if (error) {
-        console.error("Error creating user: ", error);
-        res.status(500).json({ error: "Internal Server Error" });
-        return false;
-    }
-
-    res.status(201).json({ message: "Created" });
-    return true;
+    if (error) throw new Error("Internal Server Error");
 };
 
 const update = async (
-    req: Request,
-    res: Response,
+    subject: string,
+    attributes: object,
     table: string,
-    validAttr: string[]
-): Promise<Boolean> => {
-    for (const key in req.body) {
-        let index = validAttr.indexOf(key);
-        if (index === -1) {
-            res.status(400).json({ error: "Bad Request" });
-            return false;
-        }
+    validAttributes: string[]
+) => {
+    for (const key in attributes) {
+        let index = validAttributes.indexOf(key);
+        if (index === -1) throw new Error("Bad Request");
     }
 
     const { error } = await supabase
         .from(table)
-        .update(req.body)
-        .eq("subject", req.subject);
+        .update(attributes)
+        .eq("subject", subject);
 
-    if (error) {
-        res.status(500).json({ error: "Internal Server Error" });
-        return false;
-    }
-
-    res.status(200).json({ message: "Updated" });
-    return true;
+    if (error) throw new Error("Internal Server Error");
 };
 
-const del = async (
-    req: Request,
-    res: Response,
-    table: string
-): Promise<Boolean> => {
+const del = async (req: Request, table: string) => {
     try {
         const email = querystring.escape(req.query.email as string);
 
-        if (!email) {
-            res.status(400).json({ error: "Bad Request" });
-            return false;
-        }
+        if (!email) throw new Error("Bad Request");
 
-        const descopeClient = connectDescope(res);
-        if (!descopeClient) {
-            return false;
-        }
-
-        await descopeClient.management.user.delete(email);
+        const descopeClient = connectDescope();
         await descopeClient.logoutAll(req.token);
+        await descopeClient.management.user.delete(email);
 
         const { error } = await supabase
             .from(table)
             .delete()
             .eq("subject", req.subject);
 
-        if (error) {
-            res.status(500).json({ error: "Internal Server Error" });
-            return false;
-        }
-        return true;
+        if (error) throw new Error("Internal Server Error");
     } catch (error) {
-        console.error("Error deleting user: ", error);
-        res.status(500).json({ error: "Internal Server Error" });
-        return false;
+        throw new Error("Internal Server Error");
     }
 };
 
-const updateModelEmail = async (
-    req: Request,
-    res: Response,
-    table: string
-): Promise<Boolean> => {
+const updateModelEmail = async (req: Request, table: string) => {
     try {
         const { email } = req.body;
-        if (!email || !req.token) {
-            res.status(400).json({ error: "Bad Request" });
-            return false;
-        }
+        const pattern =
+            /^[a-za-z0-9.!#$%&'*+/=?^_`{|}~-]+@[a-za-z0-9](?:[a-za-z0-9-]{0,61}[a-za-z0-9])?(?:\.[a-za-z0-9](?:[a-za-z0-9-]{0,61}[a-za-z0-9])?)*$/;
+        const isValidEmail = pattern.test(email);
 
-        const descopeClient = connectDescope(res);
-        if (!descopeClient) {
-            return false;
-        }
+        if (!email || !req.token || !isValidEmail)
+            throw new Error("Bad Request");
 
-        await descopeClient.management.user.updateEmail(req.token, email, true);
+        const descopeClient = connectDescope();
+        await descopeClient.magicLink.update.email(
+            req.user.email,
+            email,
+            req.token
+        );
 
         const { error } = await supabase
             .from(table)
             .update({ email })
             .eq("subject", req.subject);
 
-        if (error) {
-            res.status(500).json({ error: "Internal Server Error" });
-            return false;
-        }
-
-        return true;
+        if (error) throw new Error("Internal Server Error");
     } catch (error) {
-        console.error("Error Updating User", error);
-        res.status(500).json({ error: "Internal Server Error" });
-        return false;
+        throw new Error("Internal Server Error");
     }
 };
 
-const setPassword = async (
-    req: Request,
-    res: Response,
-    table: string
-): Promise<Boolean> => {
-    const { email } = req.user;
-    const { password } = req.body;
-    if (!password || !email || Object.keys(req.body).length != 1) {
-        res.status(400).json({ error: "Bad Request" });
-        return false;
-    }
-
+const setPassword = async (req: Request, table: string) => {
     try {
-        const descopeClient = connectDescope(res);
-        if (!descopeClient) {
-            return false;
+        const { email } = req.user;
+        const { password } = req.body;
+        const pattern = /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)[a-zA-Z\d]{8,}$/;
+        const isStrong = pattern.test(password);
+
+        if (
+            !password ||
+            !email ||
+            Object.keys(req.body).length != 1 ||
+            !isStrong
+        ) {
+            throw new Error("Bad Request");
         }
 
-        await descopeClient.management.user.setPassword(email, password);
+        const hash = await bcrypt.hash(password, 10).catch(() => {
+            throw new Error("Internal Server Error");
+        });
 
-        const { error } = await supabase
-            .from(table)
-            .update({ password: await bcrypt.hash(password, 12) })
-            .eq("subject", req.subject);
-
-        if (error) {
-            res.status(500).json({ error: "Internal Server Error" });
-            return false;
-        }
-
-        return true;
+        await connectDescope()
+            .password.update(email, hash, req.token)
+            .catch(() => {
+                throw new Error("Internal Server Error");
+            });
     } catch (error) {
-        console.error("Error setting password: ", error);
-        res.status(500).json({ error: "Internal Server Error" });
-        return false;
+        throw new Error("Internal Server Error");
     }
 };
 
 const validatePassword = async (
     req: Request,
-    res: Response
-): Promise<Boolean> => {
-    const { data, error } = await supabase
-        .from("users")
-        .select("password")
-        .eq("subject", req.subject);
+    res: Response,
+    next: NextFunction
+) => {
+    const { password } = req.user;
 
-    if (error) {
-        console.error("Error getting user: ", error);
-        res.status(500).json({ error: "Internal Server Error" });
-    }
+    if (Object.keys(req.body).length != 1) throw new Error("Bad Request");
+    if (!password) throw new Error("Not Found");
 
-    if (!data || !data[0].password || !req.body.password) {
-        res.status(400).json({ error: "Bad Request" });
-        return false;
-    }
+    await bcrypt
+        .compare(req.body.password, password)
+        .then((value) => {
+            if (!value) throw new Error("Unathorized");
+            return true;
+        })
+        .catch(() => {
+            throw new Error("Internal Server Error");
+        });
+};
 
-    if (await bcrypt.compare(req.body.password, data[0].password)) {
-        res.status(200).json({ message: "Password validated" });
-        return true;
-    } else {
-        res.status(401).json({ error: "Unauthorized" });
-        return false;
+const logout = async (req: Request, res: Response, next: NextFunction) => {
+    try {
+        await connectDescope().logout(req.token);
+        res.json({ message: "Logged out" });
+    } catch (error) {
+        next(error);
     }
 };
 
-const logout = async (req: Request, res: Response) => {
+const logoutAll = async (req: Request, res: Response, next: NextFunction) => {
     try {
-        const descopeClient = connectDescope(res);
-
-        if (!descopeClient) {
-            return;
-        }
-        await descopeClient.logout(req.token);
+        await connectDescope().logoutAll(req.token);
         res.json({ message: "Logged out" });
     } catch (error) {
-        console.error("Error logging out: ", error);
-        res.status(500).json({ error: "Internal Server Error" });
-    }
-};
-
-const logoutAll = async (req: Request, res: Response) => {
-    try {
-        const descopeClient = connectDescope(res);
-
-        if (!descopeClient) {
-            return;
-        }
-        await descopeClient.logoutAll(req.token);
-        res.json({ message: "Logged out" });
-    } catch (error) {
-        console.error("Error logging out: ", error);
-        res.status(500).json({ error: "Internal Server Error" });
+        next(error);
     }
 };
 

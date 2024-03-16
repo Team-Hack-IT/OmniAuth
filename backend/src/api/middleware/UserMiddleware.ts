@@ -1,21 +1,22 @@
 import { Response, Request, NextFunction } from "express";
-import BaseModelMiddleware from "./BaseModelMiddleware";
+import loadData from "../../utils/loadData";
 
-async function UserMiddleware(
+async function userMiddleware(
     req: Request,
     res: Response,
     next: NextFunction
 ): Promise<void> {
-    const data = await BaseModelMiddleware(req, res);
+    try {
+        const data = await loadData(req.subject, "users");
 
-    if (data) {
-        if ((data as { role: string }).role === "user") {
-            req.user = data;
-            next();
-        } else {
-            res.status(403).json({ error: "Forbidden" });
-        }
+        if ((data as { role: string }).role !== "user")
+            throw new Error("Forbidden");
+
+        req.user = data;
+        next();
+    } catch (error) {
+        next(error);
     }
 }
 
-export default UserMiddleware;
+export default userMiddleware;

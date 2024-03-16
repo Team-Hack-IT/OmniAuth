@@ -8,6 +8,7 @@ import {
     validatePassword,
 } from "./BaseController";
 
+
 const createBusiness = async (req: Request, res: Response) => {
     const {
         name,

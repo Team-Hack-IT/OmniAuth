@@ -1,4 +1,4 @@
-import { Request, Response } from "express";
+import { NextFunction, Request, Response } from "express";
 import {
     create,
     update,
@@ -10,43 +10,47 @@ import {
 import connectDescope from "../../config/descope.config";
 import supabase from "../../config/db.config";
 
-const createUser = async (req: Request, res: Response) => {
-    const {
-        firstname,
-        lastname,
-        email,
-        country,
-        address,
-        state,
-        birthDate,
-        postalCode,
-    } = req.body;
-    if (
-        !firstname ||
-        !lastname ||
-        !email ||
-        !country ||
-        !address ||
-        !state ||
-        !postalCode ||
-        !birthDate ||
-        Object.keys(req.body).length != 8
-    ) {
-        res.status(400).json({ error: "Bad Request" });
-        return;
-    }
+const createUser = async (req: Request, res: Response, next: NextFunction) => {
+    try {
+        const {
+            firstname,
+            lastname,
+            email,
+            country,
+            address,
+            state,
+            birthDate,
+            postalCode,
+        } = req.body;
+        if (
+            !firstname ||
+            !lastname ||
+            !email ||
+            !country ||
+            !address ||
+            !state ||
+            !postalCode ||
+            !birthDate ||
+            Object.keys(req.body).length != 8
+        ) {
+            throw new Error("Bad Request");
+        }
 
-    await create(req, res, "users", {
-        firstname,
-        lastname,
-        email,
-        country,
-        address,
-        state,
-        birthDate,
-        postalCode,
-        role: "user",
-    });
+        await create(req.subject, "users", {
+            firstname,
+            lastname,
+            email,
+            country,
+            address,
+            state,
+            birthDate,
+            postalCode,
+            role: "user",
+        });
+        res.status(201).json({ message: "User Created" });
+    } catch (error) {
+        next(error);
+    }
 };
 
 const updateUser = async (req: Request, res: Response) => {
@@ -76,22 +80,30 @@ const verifyPhone = async (req: Request, res: Response) => {
     try {
         const user = req.user;
         const { phone } = req.body;
+        const isPhoneNumber = /^\+[1-9]\d{10,14}$/.test(phone);
 
-        if (!phone || Object.keys(req.body).length != 1 || !user.email) {
+        if (
+            !phone ||
+            Object.keys(req.body).length != 1 ||
+            !user.email ||
+            !isPhoneNumber
+        ) {
             res.status(400).json({ error: "Bad Request" });
             return;
         }
 
-        const descopeClient = connectDescope(res);
+        const descopeClient = connectDescope();
         if (!descopeClient) {
             return;
         }
-        descopeClient.otp.verify.sms(phone, user.email);
+
+        await descopeClient.otp.signUpOrIn.sms(phone, req.token);
 
         const { error } = await supabase
             .from("users")
             .update({ phone })
             .eq("id", user.id);
+
         if (error) {
             res.status(500).json({ error: "Internal Server Error" });
             return;

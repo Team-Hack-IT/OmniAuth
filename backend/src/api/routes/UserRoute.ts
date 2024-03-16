@@ -9,12 +9,12 @@ import {
     verifyPassword,
 } from "../controller/UserController";
 import { profile, logout, logoutAll } from "../controller/BaseController";
-import UserMiddleware from "../middleware/UserMiddleware";
+import userMiddleware from "../middleware/UserMiddleware";
 
 const router = express.Router();
 
 router.post("/signup", createUser);
-router.use("/users", UserMiddleware);
+router.use("/users", userMiddleware);
 router.get("/users/profile", profile);
 router.post("/users/update-password", updatePassword);
 router.post("/users/update-email", updateEmail);

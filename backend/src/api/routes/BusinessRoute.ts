@@ -1,5 +1,5 @@
 import express from "express";
-import BusinessMiddleware from "../middleware/BusinessMiddleware";
+import businessMiddleware from "../middleware/BusinessMiddleware";
 import {
     createBusiness,
     deleteBusiness,
@@ -13,7 +13,7 @@ import { logout, logoutAll, profile } from "../controller/BaseController";
 const router = express.Router();
 
 router.post("/business/signup", createBusiness);
-router.use("/business", BusinessMiddleware);
+router.use("/business", businessMiddleware);
 router.get("/business/profile", profile);
 router.post("/business/update-password", updatePassword);
 router.post("/business/verify-password", verifyPassword);

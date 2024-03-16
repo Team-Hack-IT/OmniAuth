@@ -6,7 +6,7 @@ import yaml from "yamljs";
 import swaggerUi from "swagger-ui-express";
 import { sessionMiddleware } from "./api/middleware/SessionMiddleware";
 import UserRoute from "./api/routes/UserRoute";
-//import ServiceRoute from "./api/routes/ServiceRoute";
+import errorMiddleware from "./api/middleware/ErrorMiddleware";
 
 const app = express();
 const port = process.env.PORT || 3000;
@@ -39,16 +39,19 @@ if (environment === "development") {
     app.use(cors());
 }
 
-const swaggerDocument = yaml.load("./src/docs/User.yaml");
+const userDocument = yaml.load("./src/docs/User.yaml");
+const businessDocument = yaml.load("./src/docs/Business.yaml");
+const swaggerDocument = { ...userDocument, ...businessDocument };
+
 app.use("/api-docs", swaggerUi.serve, swaggerUi.setup(swaggerDocument));
 
 app.use(sessionMiddleware);
 app.use(UserRoute);
-//app.use(ServiceRoute);
 
 app.use((req, res) => {
     res.status(404).json({ error: "Not Found" });
 });
+app.use(errorMiddleware);
 
 app.listen(port, () => {
     console.log(`Server is running on port ${port}`);
