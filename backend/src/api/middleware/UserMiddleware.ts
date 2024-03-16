@@ -1,5 +1,5 @@
 import { Response, Request, NextFunction } from "express";
-import loadData from "../../utils/loadData";
+import { loadData } from "../../utils/model";
 
 async function userMiddleware(
     req: Request,

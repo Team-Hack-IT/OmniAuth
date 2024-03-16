@@ -1,4 +1,5 @@
 import { Request, Response, NextFunction } from "express";
+import errorCodes from "../../utils/errorCodes";
 
 const errorMiddleware = (
     err: Error,
@@ -6,24 +7,9 @@ const errorMiddleware = (
     res: Response,
     next: NextFunction
 ) => {
-    console.log(err.message);
-    switch (err.message) {
-        case "Internal Server Error":
-            res.status(500).json({ error: "Internal Server Error" });
-            break;
-
-        case "User Not Found":
-            res.status(404).json({ error: "User Not Found" });
-            break;
-
-        case "Bad Request":
-            res.status(400).json({ error: "Bad Request" });
-            break;
-
-        default:
-            res.status(500).json({ error: "Internal Server Error" });
-            break;
-    }
+    const message = err.message;
+    const errorCode = errorCodes[message as keyof typeof errorCodes];
+    res.status(errorCode).json({ error: message });
 };
 
 export default errorMiddleware;

@@ -1,12 +1,5 @@
 import { NextFunction, Request, Response } from "express";
-import {
-    create,
-    update,
-    del,
-    updateModelEmail,
-    setPassword,
-    validatePassword,
-} from "./BaseController";
+import { create, update } from "../../utils/model";
 import connectDescope from "../../config/descope.config";
 import supabase from "../../config/db.config";
 
@@ -53,30 +46,26 @@ const createUser = async (req: Request, res: Response, next: NextFunction) => {
     }
 };
 
-const updateUser = async (req: Request, res: Response) => {
-    const validKeys = [
-        "firstname",
-        "lastname",
-        "email",
-        "country",
-        "state",
-        "city",
-        "address",
-        "postalCode",
-        "birthDate",
-    ];
-    await update(req, res, "users", validKeys);
+const updateUser = async (req: Request, res: Response, next: NextFunction) => {
+    try {
+        const validAttributes = [
+            "firstname",
+            "lastname",
+            "country",
+            "state",
+            "city",
+            "address",
+            "postalCode",
+            "birthDate",
+        ];
+        await update(req.user.role, req.body, "user", validAttributes);
+        res.status(200).json({ message: "User Succesfully Updated" });
+    } catch (error) {
+        next(error);
+    }
 };
 
-const deleteUser = async (req: Request, res: Response) => {
-    await del(req, res, "users");
-};
-
-const updateEmail = async (req: Request, res: Response) => {
-    await updateModelEmail(req, res, "users");
-};
-
-const verifyPhone = async (req: Request, res: Response) => {
+const verifyPhone = async (req: Request, res: Response, next: NextFunction) => {
     try {
         const user = req.user;
         const { phone } = req.body;
@@ -88,47 +77,22 @@ const verifyPhone = async (req: Request, res: Response) => {
             !user.email ||
             !isPhoneNumber
         ) {
-            res.status(400).json({ error: "Bad Request" });
-            return;
+            throw new Error("Bad Request");
         }
 
-        const descopeClient = connectDescope();
-        if (!descopeClient) {
-            return;
-        }
-
-        await descopeClient.otp.signUpOrIn.sms(phone, req.token);
+        await connectDescope().otp.signUpOrIn.sms(phone);
 
         const { error } = await supabase
-            .from("users")
+            .from("user")
             .update({ phone })
             .eq("id", user.id);
 
-        if (error) {
-            res.status(500).json({ error: "Internal Server Error" });
-            return;
-        }
+        if (error) throw new Error("Internal Server Error");
+
         res.status(200).json({ message: "Phone Verified" });
     } catch (error) {
-        console.error("Error verifying phone: ", error);
-        res.status(500).json({ error: "Internal Server Error" });
+        next(error);
     }
 };
 
-const updatePassword = async (req: Request, res: Response) => {
-    await setPassword(req, res, "users");
-};
-
-const verifyPassword = async (req: Request, res: Response) => {
-    await validatePassword(req, res);
-};
-
-export {
-    createUser,
-    updateUser,
-    deleteUser,
-    updateEmail,
-    verifyPhone,
-    updatePassword,
-    verifyPassword,
-};
+export { createUser, updateUser, verifyPhone };
