@@ -96,4 +96,22 @@ const verifyPhone = async (req: Request, res: Response, next: NextFunction) => {
     }
 };
 
-export { createUser, updateUser, verifyPhone };
+const getAllBusiness = async (
+    req: Request,
+    res: Response,
+    next: NextFunction
+) => {
+    try {
+        const { data, error } = await supabase
+            .from("business")
+            .select("id, name, website, industry, description");
+
+        if (error) throw new ServerError();
+
+        res.status(200).json(data);
+    } catch (error) {
+        next(error);
+    }
+};
+
+export { createUser, updateUser, verifyPhone, getAllBusiness };

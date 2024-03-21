@@ -2,25 +2,32 @@ import express from "express";
 import businessMiddleware from "../middleware/BusinessMiddleware";
 import {
     createBusiness,
-    deleteBusiness,
     updateBusiness,
+} from "../controller/BusinessController";
+import {
+    del,
+    logout,
+    logoutAll,
+    profile,
+    resetPassword,
     updateEmail,
     updatePassword,
-    verifyPassword,
-} from "../controller/BusinessController";
-import { logout, logoutAll, profile } from "../controller/BaseController";
+    validatePassword,
+} from "../controller/BaseController";
 
 const router = express.Router();
 
 router.post("/business/signup", createBusiness);
-router.use("/business", businessMiddleware);
-router.get("/business/profile", profile);
-router.post("/business/update-password", updatePassword);
-router.post("/business/verify-password", verifyPassword);
-router.post("/business/update-email", updateEmail);
-router.delete("/business/delete", deleteBusiness);
-router.post("/business/update", updateBusiness);
-router.get("/business/logout", logout);
-router.get("/business/logoutall", logoutAll);
+
+router.use("/api/business", businessMiddleware);
+router.get("/api/business/profile", profile);
+router.post("/api/business/update-password", updatePassword);
+router.post("/api/business/verify-password", validatePassword);
+router.post("/api/business/reset-password", resetPassword);
+router.post("/api/business/update-email", updateEmail);
+router.delete("/api/business/delete", del);
+router.post("/api/business/update", updateBusiness);
+router.get("/api/business/logout", logout);
+router.get("/api/business/logout-all", logoutAll);
 
 export default router;

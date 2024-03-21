@@ -1,4 +1,3 @@
-import sharp from "sharp";
 import looksSame from "looks-same";
 import Tesseract from "tesseract.js";
 

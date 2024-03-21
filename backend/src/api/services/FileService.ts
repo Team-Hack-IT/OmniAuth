@@ -1,27 +1,29 @@
+import supabase from "../../config/db.config";
+import AllowedFileTypes, * as fileService from "../../utils/file";
+import uploadFile from "../middleware/MulterMiddleware";
 import { Response, Request, NextFunction } from "express";
 import { compareImages, matchId } from "../../utils/image";
-import * as fileService from "../../utils/file";
-import supabase from "../../config/db.config";
-import { BadRequest, Conflict, NotFound, ServerError } from "../../utils/error";
+import { BadRequest, NotFound, ServerError } from "../../utils/error";
 
 const verifyId = async (req: Request, res: Response, next: NextFunction) => {
     try {
-        const file = req.file?.buffer;
         const sub = req.subject;
         const { type } = req.params;
         const user = req.user;
         const { document, picture } = user;
 
-        if (!file || !type || !sub) throw new BadRequest();
+        if (!type || !sub) throw new BadRequest();
         if (!user || !document || !("idCard" in document) || !picture)
             throw new NotFound();
 
-        const idCard = await fileService.getFile(document.idCard as string);
-        const photo = await fileService.getFile(picture as string);
+        const idCard = await fileService.download(user, document.idCard);
+        const photo = await fileService.download(user, picture);
 
         if (!idCard || !photo) throw new NotFound();
 
-        if (!(await matchId(user, file))) {
+        const idCardBuffer = Buffer.from(await idCard.arrayBuffer());
+
+        if (!(await matchId(user, idCardBuffer))) {
             if (user.isVerified) {
                 const { error } = await supabase
                     .from("user")
@@ -56,96 +58,114 @@ const verifyId = async (req: Request, res: Response, next: NextFunction) => {
     }
 };
 
-const uploadFile = async (req: Request, res: Response) => {
-    const user = req.user;
-    const { type } = req.params;
-    const file = req.file?.buffer;
-    const allowedFiles = ["idCard", "passport", "driverLicense", "picture"];
-    const allowedTypes = ["image/png", "image/jpeg", "image/jpg"];
-    const contentType = req.file?.mimetype;
+const uploadPicture = async (
+    req: Request & { file: Express.Multer.File },
+    res: Response,
+    next: NextFunction
+) => {
+    try {
+        await uploadFile(
+            req,
+            res,
+            async (attachmentId: string, contentType: string) => {
+                if (!AllowedFileTypes["picture"].includes(contentType))
+                    throw new BadRequest();
 
-    if (
-        !file ||
-        !user ||
-        !contentType ||
-        !allowedTypes.includes(contentType) ||
-        !type ||
-        !allowedFiles.includes(type)
-    ) {
-        throw new BadRequest();
+                await fileService.saveAttachmentId(req.user, attachmentId, {
+                    picture: attachmentId,
+                });
+            }
+        );
+    } catch (error) {
+        next(error);
     }
+};
 
-    if (type in user.document) throw new Conflict("File already exists");
+const uploadAttachment = async (
+    req: Request & { file: Express.Multer.File },
+    res: Response,
+    next: NextFunction
+) => {
+    try {
+        const { user } = req;
+        const { document } = user;
+        const { type } = req.params;
 
-    const saved = await fileService.saveFile(
-        user,
-        user.role,
-        req.subject,
-        file,
-        {
-            contentType,
-            allowedTypes,
-            documentType: type !== "picture" ? type : undefined,
-            other: type,
+        if (!(type in AllowedFileTypes) || type == "picture")
+            throw new BadRequest();
+
+        await uploadFile(
+            req,
+            res,
+            async (attachmentId: string, contentType: string) => {
+                if (
+                    !AllowedFileTypes[
+                        type as keyof typeof AllowedFileTypes
+                    ].includes(contentType)
+                ) {
+                    throw new BadRequest();
+                }
+
+                document[type] = attachmentId;
+                await fileService.saveAttachmentId(user, attachmentId, {
+                    document,
+                });
+            }
+        );
+    } catch (error) {
+        next(error);
+    }
+};
+
+const downloadFile = async (
+    req: Request,
+    res: Response,
+    next: NextFunction
+) => {
+    try {
+        const user = req.user;
+        const { type } = req.params;
+        const { document } = user;
+
+        if (!user || !document || (!(type in document) && type !== "picture")) {
+            throw new NotFound();
         }
-    );
 
-    if (!saved) throw new ServerError();
+        const file = await fileService.download(
+            user,
+            type == "picture" ? user.picture : (document[type] as string)
+        );
 
-    res.status(201).json({ message: "File uploaded successfully" });
+        if (!file) throw new NotFound("File doesn't exist");
+
+        res.status(200).send(file);
+    } catch (error) {
+        next(error);
+    }
 };
 
-const downloadFile = async (req: Request, res: Response) => {
-    const sub = req.subject;
-    const user = req.user;
-    const { type } = req.params;
-    const { document } = user;
+const deleteFile = async (req: Request, res: Response, next: NextFunction) => {
+    try {
+        const user = req.user;
+        const { type } = req.params;
+        const { document } = user;
 
-    if (
-        !user ||
-        !sub ||
-        !document ||
-        (!(type in document) && type !== "picture")
-    ) {
-        throw new NotFound();
+        if (type == "picture") {
+            if (!user.picture) throw new NotFound();
+            await fileService.del(user, user.picture);
+            await fileService.saveAttachmentId(user, null, { picture: null });
+        } else {
+            if (!(type in document) || !document[type]) throw new NotFound();
+            await fileService.del(user, document[type]);
+            await fileService.saveAttachmentId(user, null, {
+                document: { ...document, [type]: null },
+            });
+        }
+
+        res.status(200).json({ message: "File deleted successfully" });
+    } catch (error) {
+        next(error);
     }
-
-    const file = await fileService.getFile(
-        type == "picture" ? user.picture : (document[type] as string)
-    );
-
-    if (!file) throw new NotFound("File doesn't exist");
-
-    res.status(200).send(file);
 };
 
-const replaceFile = async (req: Request, res: Response) => {
-    const user = req.user;
-    const { type } = req.params;
-    const file = req.file?.buffer;
-    const allowedFiles = ["idCard", "passport", "driverLicense", "picture"];
-    const allowedTypes = ["image/png", "image/jpeg", "image/jpg"];
-    const contentType = req.file?.mimetype;
-
-    if (
-        !file ||
-        !user ||
-        !contentType ||
-        !allowedTypes.includes(contentType) ||
-        !type ||
-        !allowedFiles.includes(type)
-    ) {
-        res.status(400).json({ error: "Bad Request" });
-        return;
-    }
-
-    const updated = await fileService.updateFile(user.document[type], file);
-
-    if (!updated) {
-        res.status(500).json({ error: "Internal Server Error" });
-        return;
-    }
-
-    res.status(200).json({ message: "File updated successfully" });
-};
-export { verifyId, uploadFile, downloadFile, replaceFile };
+export { verifyId, uploadPicture, uploadAttachment, downloadFile, deleteFile };

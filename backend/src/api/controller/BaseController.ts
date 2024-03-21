@@ -2,13 +2,13 @@ import { NextFunction, Request, Response } from "express";
 import bcrypt from "bcrypt";
 import connectDescope from "../../config/descope.config";
 import supabase from "../../config/db.config";
-import * as querystring from "querystring";
 import {
     BadRequest,
     NotFound,
     ServerError,
     Unauthorized,
 } from "../../utils/error";
+import { deleteBucket } from "../../utils/file";
 
 const profile = async (req: Request, res: Response) => {
     delete req.user.password;
@@ -18,13 +18,9 @@ const profile = async (req: Request, res: Response) => {
 
 const del = async (req: Request, res: Response, next: NextFunction) => {
     try {
-        const email = querystring.unescape(req.query.email as string);
-        const pattern =
-            /^[a-za-z0-9.!#$%&'*+/=?^_`{|}~-]+@[a-za-z0-9](?:[a-za-z0-9-]{0,61}[a-za-z0-9])?(?:\.[a-za-z0-9](?:[a-za-z0-9-]{0,61}[a-za-z0-9])?)*$/;
-        const isValidEmail = pattern.test(email);
+        const { email } = req.user;
 
-        if (!email || !isValidEmail) throw new BadRequest();
-        if (!email) throw new BadRequest();
+        if (!email) throw new BadRequest("Email not found");
 
         const descopeClient = connectDescope();
         await descopeClient.logoutAll(req.token);
@@ -37,6 +33,7 @@ const del = async (req: Request, res: Response, next: NextFunction) => {
 
         if (error) throw new ServerError();
 
+        deleteBucket(req.user.id);
         res.status(200).json({ message: "Deleted" });
     } catch (error) {
         next(error);
@@ -132,7 +129,7 @@ const setPassword = async (
             throw new Error("Internal Server Error");
         });
 
-        await cb(email, hash, req.token);
+        cb(email, hash, req.token);
         const { error } = await supabase
             .from(req.user.role)
             .update({ password: hash })

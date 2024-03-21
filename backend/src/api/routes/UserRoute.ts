@@ -3,6 +3,7 @@ import {
     createUser,
     updateUser,
     verifyPhone,
+    getAllBusiness,
 } from "../controller/UserController";
 import {
     profile,
@@ -18,17 +19,18 @@ import userMiddleware from "../middleware/UserMiddleware";
 
 const router = express.Router();
 
-router.post("/signup", createUser);
-router.use("/users", userMiddleware);
-router.get("/users/profile", profile);
-router.post("/users/update-password", updatePassword);
-router.post("/users/validate-password", validatePassword);
-router.post("/users/reset-password", resetPassword);
-router.post("/users/update-email", updateEmail);
-router.delete("/users/delete/", del);
-router.post("/users/update", updateUser);
-router.post("/users/verify-phone", verifyPhone);
-router.get("/users/logoutall", logoutAll);
-router.get("/users/logout", logout);
+router.post("/api/signup", createUser);
+router.use("/api/user", userMiddleware);
+router.get("/api/user/profile", profile);
+router.post("/api/user/update-password", updatePassword);
+router.post("/api/user/validate-password", validatePassword);
+router.post("/api/user/reset-password", resetPassword);
+router.post("/api/user/update-email", updateEmail);
+router.delete("/api/user/delete", del);
+router.post("/api/user/update", updateUser);
+router.post("/api/user/verify-phone", verifyPhone);
+router.get("/api/user/logout-all", logoutAll);
+router.get("/api/user/logout", logout);
+router.get("/api/user/get-all-business", getAllBusiness);
 
 export default router;

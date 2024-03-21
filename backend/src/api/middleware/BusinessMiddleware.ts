@@ -1,7 +1,7 @@
 import { Response, Request, NextFunction } from "express";
 import { loadData } from "../../utils/model";
 
-async function businessMiddleware(
+export default async function businessMiddleware(
     req: Request,
     res: Response,
     next: NextFunction
@@ -18,5 +18,3 @@ async function businessMiddleware(
         next(error);
     }
 }
-
-export default businessMiddleware;

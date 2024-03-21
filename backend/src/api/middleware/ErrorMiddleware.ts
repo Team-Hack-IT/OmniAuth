@@ -2,12 +2,12 @@ import { Request, Response, NextFunction } from "express";
 import {} from "../../utils/error";
 import logger from "../../config/logger";
 
-const errorMiddleware = (
+export default async function errorMiddleware(
     err: Error,
     req: Request,
     res: Response,
     next: NextFunction
-) => {
+) {
     console.log(err.message);
     switch (err.name) {
         case "BadRequest":
@@ -28,6 +28,4 @@ const errorMiddleware = (
             logger.error(`${err.message}`);
             res.status(500).json({ error: "Internal Server Error" });
     }
-};
-
-export default errorMiddleware;
+}

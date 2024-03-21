@@ -1,9 +1,9 @@
-import { Response, Request, NextFunction } from "express";
 import connectDescope from "../../config/descope.config";
 import logger from "../../config/logger";
+import { Response, Request, NextFunction } from "express";
 import { Unauthorized } from "../../utils/error";
 
-async function sessionMiddleware(
+export default async function sessionMiddleware(
     req: Request,
     res: Response,
     next: NextFunction
@@ -29,5 +29,3 @@ async function sessionMiddleware(
         next(error);
     }
 }
-
-export default sessionMiddleware;

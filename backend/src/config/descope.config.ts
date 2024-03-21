@@ -4,10 +4,6 @@ import { ServerError } from "../utils/error";
 
 dotenv.config();
 
-/**
- * Connects to Descope and returns a DescopeClient instance.
- * returns {DescopeClient | null} The DescopeClient instance if connected successfully, otherwise throws an error.
- */
 function connectDescope() {
     try {
         return DescopeClient({

@@ -2,7 +2,7 @@ import { Response, Request, NextFunction } from "express";
 import { loadData } from "../../utils/model";
 import { Forbidden } from "../../utils/error";
 
-async function userMiddleware(
+export default async function userMiddleware(
     req: Request,
     res: Response,
     next: NextFunction
@@ -18,5 +18,3 @@ async function userMiddleware(
         next(error);
     }
 }
-
-export default userMiddleware;
