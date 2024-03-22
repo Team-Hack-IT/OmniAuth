@@ -1,68 +1,84 @@
-import Web3 from "web3";
-import * as MyContractABI from "../../../../smartContract/artifacts...MyContract.json";
+import { TronWeb } from "tronweb";
+import * as ContractABI from "../../../../smartContract/artifacts...MyContract.json";
 import dotenv from "dotenv";
-import http from "http";
 
 dotenv.config();
 
-const web3 = new Web3(process.env.BLOCKCHAIN_URL);
-const contractABI = MyContractABI.abi;
+const tronWeb = new TronWeb({
+    fullHost: process.env.CONTRACT_URL,
+});
+
 const contractAddress = process.env.CONTRACT_ADDRESS;
-const myContract = new web3.eth.Contract(contractABI, contractAddress);
+const contract = tronWeb.contract(ContractABI.abi, contractAddress);
 
-async function getUsageId() {
-    const result = await myContract.methods.usageId().call();
-    console.log(result);
-}
-
-async function makeChainlinkRequest() {
-    const url = process.env.CHAINLINK_URL || "None";
-    const requestData = {
-        jobID: "12345",
-        data: {
-            param1: "value1",
-            param2: "value2",
-        },
-    };
-
-    const options = {
-        method: "POST",
-        headers: {
-            "Content-Type": "application/json",
-        },
-    };
-
-    try {
-        const response = await new Promise((resolve, reject) => {
-            const req = http.request(url, options, (res) => {
-                let data = "";
-                res.on("data", (chunk) => {
-                    data += chunk;
-                });
-                res.on("end", () => {
-                    resolve(data);
-                });
-            });
-
-            req.on("error", (error) => {
-                reject(error);
-            });
-
-            req.write(JSON.stringify(requestData));
-            req.end();
+export function registerUser() {
+    contract
+        .registerUser()
+        .send({
+            feeLimit: 1_000_000,
+            callValue: 0,
+            shouldPollResponse: true,
+        })
+        .then((result: any) => {
+            console.log("User registered:", result);
+        })
+        .catch((error: any) => {
+            console.error("Error registering user:", error);
         });
-
-        console.log(response);
-    } catch (error) {
-        console.error(error);
-    }
 }
 
-async function main() {
-    await getUsageId();
-    await makeChainlinkRequest();
+export function approveUser(userId: number) {
+    contract
+        .approveUser(userId)
+        .send({
+            feeLimit: 1_000_000,
+            callValue: 0,
+            shouldPollResponse: true,
+        })
+        .then((result: any) => {
+            console.log("User approved:", result);
+        })
+        .catch((error: any) => {
+            console.error("Error approving user:", error);
+        });
 }
 
-main().catch((error) => console.error(error));
+export function setData(data: string) {
+    contract
+        .setData(data)
+        .send({
+            feeLimit: 1_000_000,
+            callValue: 0,
+            shouldPollResponse: true,
+        })
+        .then((result: any) => {
+            console.log("Data set:", result);
+        })
+        .catch((error: any) => {
+            console.error("Error setting data:", error);
+        });
+}
 
-export { getUsageId, makeChainlinkRequest };
+export function getOwner() {
+    contract
+        .getOwner()
+        .call()
+        .then((result: any) => {
+            console.log("Contract owner:", result);
+        })
+        .catch((error: any) => {
+            console.error("Error getting contract owner:", error);
+        });
+}
+
+export function getData() {
+    contract
+        .getData()
+        .call()
+        .then((result: any) => {
+            console.log("Data:", result);
+        })
+        .catch((error: any) => {
+            console.error("Error getting data:", error);
+        });
+}

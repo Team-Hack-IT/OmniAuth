@@ -4,24 +4,33 @@ import uploadFile from "../middleware/MulterMiddleware";
 import { Response, Request, NextFunction } from "express";
 import { compareImages, matchId } from "../../utils/image";
 import { BadRequest, NotFound, ServerError } from "../../utils/error";
+import { User } from "../../@types/model.types";
 
 const verifyId = async (req: Request, res: Response, next: NextFunction) => {
     try {
         const sub = req.subject;
+        const user = req.user as User;
         const { type } = req.params;
-        const user = req.user;
-        const { document, picture } = user;
+        const { picture, bucketId, role } = user;
+        const document = user.document
+            ? JSON.parse(user.document.toString())
+            : {};
 
         if (!type || !sub) throw new BadRequest();
-        if (!user || !document || !("idCard" in document) || !picture)
+        if (!document || !("idCard" in document) || !picture || !bucketId)
             throw new NotFound();
 
-        const idCard = await fileService.download(user, document.idCard);
-        const photo = await fileService.download(user, picture);
+        const idCard = await fileService.download(
+            document.idCard,
+            bucketId,
+            role
+        );
+        const photo = await fileService.download(picture, bucketId, role);
 
         if (!idCard || !photo) throw new NotFound();
 
         const idCardBuffer = Buffer.from(await idCard.arrayBuffer());
+        const photoBuffer = Buffer.from(await photo.arrayBuffer());
 
         if (!(await matchId(user, idCardBuffer))) {
             if (user.isVerified) {
@@ -30,17 +39,12 @@ const verifyId = async (req: Request, res: Response, next: NextFunction) => {
                     .update({ isVerified: false })
                     .eq("id", req.user.id);
 
-                if (error) {
-                    res.status(500).json({ error: "Internal server error" });
-                    return;
-                }
+                if (error) throw new ServerError();
             }
             return;
         }
 
-        const looksSame = await compareImages(idCard, photo);
-
-        if (looksSame) {
+        if (await compareImages(idCardBuffer, photoBuffer)) {
             if (!user.isVerified) {
                 const { error } = await supabase
                     .from("user")
@@ -59,11 +63,13 @@ const verifyId = async (req: Request, res: Response, next: NextFunction) => {
 };
 
 const uploadPicture = async (
-    req: Request & { file: Express.Multer.File },
+    req: Request,
     res: Response,
     next: NextFunction
 ) => {
     try {
+        const { id, role } = req.user;
+
         await uploadFile(
             req,
             res,
@@ -71,9 +77,12 @@ const uploadPicture = async (
                 if (!AllowedFileTypes["picture"].includes(contentType))
                     throw new BadRequest();
 
-                await fileService.saveAttachmentId(req.user, attachmentId, {
-                    picture: attachmentId,
-                });
+                await fileService.saveAttachmentId(
+                    id,
+                    attachmentId,
+                    role,
+                    "picture"
+                );
             }
         );
     } catch (error) {
@@ -82,13 +91,14 @@ const uploadPicture = async (
 };
 
 const uploadAttachment = async (
-    req: Request & { file: Express.Multer.File },
+    req: Request,
     res: Response,
     next: NextFunction
 ) => {
     try {
         const { user } = req;
-        const { document } = user;
+        const { id, document, role } = user as User;
+        const parsedDocument = document ? JSON.parse(document.toString()) : {};
         const { type } = req.params;
 
         if (!(type in AllowedFileTypes) || type == "picture")
@@ -106,10 +116,13 @@ const uploadAttachment = async (
                     throw new BadRequest();
                 }
 
-                document[type] = attachmentId;
-                await fileService.saveAttachmentId(user, attachmentId, {
-                    document,
-                });
+                parsedDocument[type] = attachmentId;
+                await fileService.saveAttachmentId(
+                    id,
+                    attachmentId,
+                    role,
+                    parsedDocument[type]
+                );
             }
         );
     } catch (error) {
@@ -123,17 +136,20 @@ const downloadFile = async (
     next: NextFunction
 ) => {
     try {
-        const user = req.user;
         const { type } = req.params;
-        const { document } = user;
+        const { user } = req;
+        const { document, role, bucketId, picture } = user as User;
+        const parsedDocument = document ? JSON.parse(document.toString()) : {};
 
-        if (!user || !document || (!(type in document) && type !== "picture")) {
+        if (!type || !bucketId) throw new BadRequest();
+        if (type == "picture" && !picture) throw new NotFound();
+        if (!(type in parsedDocument) || !parsedDocument[type])
             throw new NotFound();
-        }
 
         const file = await fileService.download(
-            user,
-            type == "picture" ? user.picture : (document[type] as string)
+            type == "picture" ? picture : parsedDocument[type],
+            bucketId,
+            role
         );
 
         if (!file) throw new NotFound("File doesn't exist");
@@ -146,20 +162,28 @@ const downloadFile = async (
 
 const deleteFile = async (req: Request, res: Response, next: NextFunction) => {
     try {
-        const user = req.user;
         const { type } = req.params;
-        const { document } = user;
+        const { user } = req;
+        const { id, document, picture, role, bucketId } = user as User;
+        const parsedDocument = document ? JSON.parse(document.toString()) : {};
+
+        if (!type || !bucketId) throw new BadRequest();
 
         if (type == "picture") {
-            if (!user.picture) throw new NotFound();
-            await fileService.del(user, user.picture);
-            await fileService.saveAttachmentId(user, null, { picture: null });
+            if (!picture) throw new NotFound();
+            await fileService.del(picture, bucketId, role);
+            await fileService.saveAttachmentId(id, null, role, "picture");
         } else {
-            if (!(type in document) || !document[type]) throw new NotFound();
-            await fileService.del(user, document[type]);
-            await fileService.saveAttachmentId(user, null, {
-                document: { ...document, [type]: null },
-            });
+            if (!(type in parsedDocument) || !parsedDocument[type])
+                throw new NotFound();
+            await fileService.del(parsedDocument[type], bucketId, role);
+            parsedDocument[type] = null;
+            await fileService.saveAttachmentId(
+                id,
+                null,
+                role,
+                parsedDocument[type]
+            );
         }
 
         res.status(200).json({ message: "File deleted successfully" });

@@ -1,5 +1,6 @@
 import { Response, Request, NextFunction } from "express";
 import { loadData } from "../../utils/model";
+import { Business } from "../../@types/model.types";
 
 export default async function businessMiddleware(
     req: Request,
@@ -12,7 +13,7 @@ export default async function businessMiddleware(
         if ((data as { role: string }).role !== "business")
             throw new Error("Forbidden");
 
-        req.user = data;
+        req.user = data as Business;
         next();
     } catch (error) {
         next(error);

@@ -12,48 +12,54 @@ export type Database = {
       business: {
         Row: {
           address: string | null
+          bucketId: string | null
           createdAt: string
           description: string | null
           email: string
           id: string
           industry: string | null
           logo: string | null
-          "password ": string | null
-          role: string | null
+          password: string | null
+          role: string
+          scope: Json | null
           subject: string | null
-          "tier ": string | null
+          tier: string | null
           updatedAt: string | null
           usage: number | null
           website: string | null
         }
         Insert: {
           address?: string | null
+          bucketId?: string | null
           createdAt?: string
           description?: string | null
           email: string
           id?: string
           industry?: string | null
           logo?: string | null
-          "password "?: string | null
-          role?: string | null
+          password?: string | null
+          role?: string
+          scope?: Json | null
           subject?: string | null
-          "tier "?: string | null
+          tier?: string | null
           updatedAt?: string | null
           usage?: number | null
           website?: string | null
         }
         Update: {
           address?: string | null
+          bucketId?: string | null
           createdAt?: string
           description?: string | null
           email?: string
           id?: string
           industry?: string | null
           logo?: string | null
-          "password "?: string | null
-          role?: string | null
+          password?: string | null
+          role?: string
+          scope?: Json | null
           subject?: string | null
-          "tier "?: string | null
+          tier?: string | null
           updatedAt?: string | null
           usage?: number | null
           website?: string | null

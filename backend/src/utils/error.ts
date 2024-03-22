@@ -3,6 +3,7 @@ class Unauthorized extends Error {
         super(message);
         this.name = "Unauthorized";
     }
+    statusCode = 401;
 }
 
 class Forbidden extends Error {
@@ -10,6 +11,7 @@ class Forbidden extends Error {
         super(message);
         this.name = "Forbidden";
     }
+    statusCode = 403;
 }
 
 class ServerError extends Error {
@@ -17,6 +19,7 @@ class ServerError extends Error {
         super(message);
         this.name = "ServerError";
     }
+    statusCode = 500;
 }
 
 class NotFound extends Error {
@@ -24,6 +27,7 @@ class NotFound extends Error {
         super(message);
         this.name = "NotFound";
     }
+    statusCode = 404;
 }
 
 class BadRequest extends Error {
@@ -31,6 +35,7 @@ class BadRequest extends Error {
         super(message);
         this.name = "BadRequest";
     }
+    statusCode = 400;
 }
 
 class Conflict extends Error {
@@ -38,5 +43,6 @@ class Conflict extends Error {
         super(message);
         this.name = "Conflict";
     }
+    statusCode = 409;
 }
 export { Unauthorized, Forbidden, ServerError, NotFound, BadRequest, Conflict };

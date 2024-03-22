@@ -4,7 +4,7 @@ info:
     description: Documentation for the endpoint of the omni auth user API
     version: 1.0.0
 paths:
-    /signup:
+    /api/signup:
         post:
             summary: Create a new user
             description: Endpoint to create a new user.
@@ -30,7 +30,7 @@ paths:
                 "500":
                     description: Internal server error
 
-    /users/profile:
+    /api/users/profile:
         get:
             summary: Get user profile
             description: Endpoint to get the profile of the authenticated user.
@@ -49,7 +49,7 @@ paths:
                 "500":
                     description: Internal server error
 
-    /users/update-password:
+    /api/users/update-password:
         post:
             summary: Update user password
             description: Endpoint to update the password of the authenticated user.
@@ -72,7 +72,7 @@ paths:
                 currentPassword: oldpassword123
                 newPassword: newpassword123
 
-    /users/update-email:
+    /api/users/update-email:
         post:
             summary: Update user email
             description: Endpoint to update the email of the authenticated user.
@@ -94,7 +94,7 @@ paths:
             example:
                 newEmail: newemail@example.com
 
-    /users/delete:
+    /api/users/delete:
         delete:
             summary: Delete user
             description: Endpoint to delete the authenticated user.
@@ -106,7 +106,7 @@ paths:
                 "500":
                     description: Internal server error
 
-    /users/update:
+    /api/users/update:
         post:
             summary: Update user
             description: Endpoint to update the details of the authenticated user.
@@ -129,7 +129,7 @@ paths:
                 username: new_username
                 email: new_email@example.com
 
-    /verifyphone:
+    /api/verifyphone:
         post:
             summary: Verify phone number
             description: Endpoint to verify the phone number of the authenticated user.
@@ -151,7 +151,7 @@ paths:
             example:
                 phoneNumber: +1234567890
 
-    /users/logoutall:
+    /api/users/logoutall:
         get:
             summary: Logout from all devices
             description: Endpoint to logout the authenticated user from all devices.
@@ -163,7 +163,7 @@ paths:
                 "500":
                     description: Internal server error
 
-    /users/logout:
+    /api/users/logout:
         get:
             summary: Logout
             description: Endpoint to logout the authenticated user.
@@ -177,7 +177,7 @@ paths:
                 "500":
                     description: Internal server error
 
-    /users/verify-id:
+    /api/users/verify-id:
         post:
             summary: Verify user identity
             description: Endpoint to verify the identity of the authenticated user.
@@ -201,7 +201,7 @@ paths:
                 "500":
                     description: Internal server error
 
-    /users/upload/{type}:
+    /api/users/upload/{type}:
         post:
             summary: Upload file
             description: Endpoint to upload a file for the authenticated user.
@@ -231,10 +231,10 @@ paths:
                 "500":
                     description: Internal server error
 
-    /users/download/{type}:
+    /api/users/download/{type}:
         get:
             summary: Download file
-            description: Endpoint to download a file for the authenticated user.
+            description: Endpoint to download a specified file for the authenticated user.
             parameters:
                 - in: path
                   name: type

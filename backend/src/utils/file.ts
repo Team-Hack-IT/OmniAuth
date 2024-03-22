@@ -20,7 +20,7 @@ const deleteBucket = async (bucketId: string) => {
     if (StorageError) throw new ServerError();
 };
 
-const createBucket = async (user: any) => {
+const createBucket = async (userId: string, table: string) => {
     const bucketId = uuidv4();
     const { error: StorageError } = await supabase.storage.createBucket(
         bucketId,
@@ -41,9 +41,9 @@ const createBucket = async (user: any) => {
     if (StorageError) throw new ServerError();
 
     const { error } = await supabase
-        .from(user.role)
+        .from(table)
         .update({ bucketId })
-        .eq("id", user.id);
+        .eq("id", userId);
 
     if (error) throw new ServerError();
 
@@ -51,21 +51,26 @@ const createBucket = async (user: any) => {
 };
 
 const saveAttachmentId = async (
-    user: any,
+    userId: string,
     attachmentId: string | null,
-    property: any
+    table: string,
+    columnName: string
 ) => {
     const { error } = await supabase
-        .from(user.role)
-        .update({ [property]: attachmentId })
-        .eq("id", user.id);
+        .from(table)
+        .update({ [columnName]: attachmentId })
+        .eq("id", userId);
 
     if (error) throw new ServerError();
 };
 
-const download = async (user: any, attachmentId: string) => {
+const download = async (
+    attachmentId: string,
+    bucketId: string,
+    table: string
+) => {
     const { data, error } = await supabase.storage
-        .from(`public/${user.role}/${user.bucketId}`)
+        .from(`public/${table}/${bucketId}`)
         .download(attachmentId);
 
     if (error) {
@@ -96,9 +101,9 @@ const upload = async (
     return attachmentId;
 };
 
-const del = async (user: any, attachmentId: string) => {
+const del = async (attachmentId: string, bucketId: string, table: string) => {
     const { error } = await supabase.storage
-        .from(`public/${user.role}/${user.bucketId}`)
+        .from(`public/${table}/${bucketId}`)
         .remove([attachmentId]);
 
     if (error) {
@@ -107,10 +112,15 @@ const del = async (user: any, attachmentId: string) => {
     }
 };
 
-const update = async (attachmentId: string, user: any, file: Buffer) => {
+const update = async (
+    file: Buffer,
+    attachmentId: string,
+    bucketId: string,
+    table: string
+) => {
     const { error } = await supabase.storage
-        .from(user.bucketId)
-        .update(`public/${user.role}/${attachmentId}`, file);
+        .from(bucketId)
+        .update(`public/${table}/${attachmentId}`, file);
 
     if (error) {
         if (error.message === "Not found") throw new NotFound("File not found");
@@ -126,5 +136,5 @@ export {
     upload,
     del,
     update,
+    AllowedFileTypes as default,
 };
-export default AllowedFileTypes;

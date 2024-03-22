@@ -1,41 +1,61 @@
 import multer from "multer";
+import NodeClam from "clamscan";
 import * as fileService from "../../utils/file";
 import { Request, Response } from "express";
 import { BadRequest, NotFound, ServerError } from "../../utils/error";
 
+const upload = multer({
+    limits: {
+        fileSize: 1024 * 196, // 200kb
+    },
+});
+
+const clamscan = new NodeClam().init({
+    removeInfected: true,
+    quarantineInfected: "~/infected/",
+    scanLog: "../logs/node-clam",
+    debugMode: true,
+});
+
+const handleMulterError = (err: multer.MulterError, res: Response) => {
+    switch (err.code) {
+        case "LIMIT_FILE_SIZE":
+            res.status(413).send({ error: "File too large" });
+            break;
+        case "LIMIT_UNEXPECTED_FILE":
+            res.status(400).send({ error: "Unexpected field" });
+            break;
+        default:
+            throw new ServerError();
+    }
+};
+
 export default async function uploadFile(
-    req: Request & { file: Express.Multer.File },
+    req: Request,
     res: Response,
     cb: (attachmentId: string, contentType: string) => Promise<void>
 ) {
     try {
-        const upload = multer({
-            limits: {
-                fileSize: 1024 * 512, // 500kb
-            },
-        });
-
         upload.single("file")(req, res, async (err) => {
-            const { user } = req;
-            const file = req.file?.buffer;
-            const contentType = req.file?.mimetype;
-
             if (err) {
-                if (
-                    err instanceof multer.MulterError &&
-                    err.code === "LIMIT_FILE_SIZE"
-                ) {
-                    res.status(413).send({ message: "File too large" });
-                } else {
-                    throw new ServerError();
-                }
+                handleMulterError(err, res);
+                return;
             }
-            if (!user) throw new NotFound("User Not Found");
-            if (!file || !contentType) throw new BadRequest();
+            if (!req.file) throw new BadRequest("No file uploaded");
+
+            const { user } = req;
+            const contentType = req.file.mimetype;
+            const file = req.file.buffer;
+
+            (await clamscan)
+                .scanFile(req.file.path)
+                .then(({ file, isInfected }) => {
+                    if (isInfected) throw new BadRequest();
+                });
 
             const bucketId = user.bucketId
                 ? user.bucketId
-                : await fileService.createBucket(user);
+                : await fileService.createBucket(user.id, user.role);
             const attachmentId = await fileService.upload(
                 file,
                 bucketId,

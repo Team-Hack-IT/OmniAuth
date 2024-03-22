@@ -74,7 +74,8 @@ const updatePassword = async (
     next: NextFunction
 ) => {
     try {
-        await setPassword(req, (email: string, hash: string, token: string) => {
+        await setPassword(req, (email, hash, token) => {
+            if (!hash) throw new ServerError();
             connectDescope()
                 .password.update(email, hash, token)
                 .catch(() => {
@@ -93,7 +94,7 @@ const resetPassword = async (
     next: NextFunction
 ) => {
     try {
-        await setPassword(req, (email: string) => {
+        await setPassword(req, (email) => {
             connectDescope()
                 .password.sendReset(email, "http://omni-auth.vercel.app/")
                 .catch(() => {
@@ -108,7 +109,7 @@ const resetPassword = async (
 
 const setPassword = async (
     req: Request,
-    cb: (email: any, hash?: any, token?: any) => void
+    cb: (email: string, hash?: string, token?: string) => void
 ) => {
     try {
         const { email } = req.user;

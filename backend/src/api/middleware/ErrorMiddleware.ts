@@ -1,14 +1,11 @@
-import { Request, Response, NextFunction } from "express";
-import {} from "../../utils/error";
+import { Request, Response } from "express";
 import logger from "../../config/logger";
 
 export default async function errorMiddleware(
     err: Error,
     req: Request,
-    res: Response,
-    next: NextFunction
+    res: Response
 ) {
-    console.log(err.message);
     switch (err.name) {
         case "BadRequest":
             res.status(400).json({ error: err.message });
