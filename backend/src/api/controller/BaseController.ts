@@ -11,9 +11,8 @@ import {
 import { deleteBucket } from "../../utils/file";
 
 const profile = async (req: Request, res: Response) => {
-    delete req.user.password;
-    delete req.user.subject;
-    res.status(200).json(req.user);
+    const { password, subject, bucketId, ...user } = req.user;
+    res.status(200).json(user);
 };
 
 const del = async (req: Request, res: Response, next: NextFunction) => {

@@ -8,49 +8,33 @@ const createBusiness = async (
     next: NextFunction
 ) => {
     try {
-        const {
-            name,
-            email,
-            country,
-            address,
-            city,
-            state,
-            postalCode,
-            website,
-            description,
-            tier,
-            industry,
-        } = req.body;
+        const requiredAttributes = [
+            "name",
+            "email",
+            "country",
+            "address",
+            "city",
+            "state",
+            "postalCode",
+            "website",
+            "description",
+            "industry",
+            "tier",
+        ];
 
+        const { body } = req;
+        const hasAllRequiredAttributes = requiredAttributes.every(
+            (attr) => body[attr]
+        );
         if (
-            !name ||
-            !email ||
-            !country ||
-            !address ||
-            !city ||
-            !state ||
-            !postalCode ||
-            !website ||
-            !description ||
-            !industry ||
-            !tier ||
-            req.body.length !== 11
+            !hasAllRequiredAttributes ||
+            Object.keys(body).length !== requiredAttributes.length
         ) {
             throw new BadRequest();
         }
 
         await create(req.subject, "business", {
-            name,
-            email,
-            address,
-            city,
-            state,
-            country,
-            postalCode,
-            website,
-            industry,
-            description,
-            tier,
+            ...body,
             role: "business",
         });
         res.status(201).json({ message: "User Created" });

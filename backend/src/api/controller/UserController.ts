@@ -1,46 +1,38 @@
-import { NextFunction, Request, Response } from "express";
-import { create, update } from "../../utils/model";
 import connectDescope from "../../config/descope.config";
 import supabase from "../../config/db.config";
+import { create, update } from "../../utils/model";
+import { Request, Response, NextFunction } from "express";
 import { BadRequest, ServerError } from "../../utils/error";
 
 const createUser = async (req: Request, res: Response, next: NextFunction) => {
     try {
-        const {
-            firstname,
-            lastname,
-            email,
-            country,
-            address,
-            state,
-            birthDate,
-            postalCode,
-        } = req.body;
+        const requiredAttributes = [
+            "firstname",
+            "lastname",
+            "email",
+            "country",
+            "address",
+            "state",
+            "birthDate",
+            "postalCode",
+        ];
+        const { body } = req;
+        const hasAllRequiredAttributes = requiredAttributes.every(
+            (attr) => body[attr]
+        );
         if (
-            !firstname ||
-            !lastname ||
-            !email ||
-            !country ||
-            !address ||
-            !state ||
-            !postalCode ||
-            !birthDate ||
-            Object.keys(req.body).length != 8
+            !hasAllRequiredAttributes ||
+            Object.keys(body).length !== requiredAttributes.length
         ) {
             throw new BadRequest();
         }
 
-        await create(req.subject, "user", {
-            firstname,
-            lastname,
-            email,
-            country,
-            address,
-            state,
-            birthDate,
-            postalCode,
+        const user = {
+            ...body,
             role: "user",
-        });
+        };
+
+        await create(req.subject, "user", user);
         res.status(201).json({ message: "User Created" });
     } catch (error) {
         next(error);
@@ -71,13 +63,9 @@ const verifyPhone = async (req: Request, res: Response, next: NextFunction) => {
         const user = req.user;
         const { phone } = req.body;
         const isPhoneNumber = /^\+[1-9]\d{10,14}$/.test(phone);
+        const length = Object.keys(req.body).length;
 
-        if (
-            !phone ||
-            Object.keys(req.body).length != 1 ||
-            !user.email ||
-            !isPhoneNumber
-        ) {
+        if (!phone || length != 1 || !isPhoneNumber) {
             throw new Error("Bad Request");
         }
 

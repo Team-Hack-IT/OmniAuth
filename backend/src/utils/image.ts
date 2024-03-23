@@ -34,12 +34,17 @@ const matchId = async (user: User, file: Buffer): Promise<boolean> => {
         const {
             data: { text },
         }: { data: { text: string } } = await Tesseract.recognize(file);
+        const { firstname, lastname, birthDate, country } = user;
+
+        if (!birthDate || !country || !firstname || !lastname) {
+            return false;
+        }
 
         if (
-            user.country &&
-            text.includes(user.country) &&
-            text.includes(user.firstname) &&
-            text.includes(user.lastname)
+            text.includes(country) &&
+            text.includes(firstname) &&
+            text.includes(lastname) &&
+            text.includes(birthDate)
         ) {
             return true;
         } else {

@@ -1,26 +1,22 @@
 {
-    "name": "backend",
+    "name": "omni_auth",
     "version": "1.0.0",
-    "description": "",
+    "description": "Backend for OmniAuth identity verification service",
     "main": "index.js",
     "scripts": {
-        "test": "jest",
+        "build": "npx tsc -p .",
         "dev": "nodemon ./src/index.ts",
         "start": "node ./build/index.js",
-        "build": "npx tsc -p .",
         "lint": "eslint . --ext .ts",
-        "lint:fix": "eslint . --ext .ts --fix"
+        "lint:fix": "eslint . --ext .ts --fix",
+        "prepare": "cross-env HUSKY_GIT_DIR=../.git husky install",
+        "test": "jest"
     },
     "keywords": [],
     "author": "",
     "license": "ISC",
-    "husky": {
-        "hooks": {
-            "pre-commit": "lint-staged"
-        }
-    },
     "lint-staged": {
-        "*.{js,jsx,ts,tsx}": "prettier --write"
+        "*.{js,jsx,ts,tsx}": "prettier --write eslint --fix"
     },
     "dependencies": {
         "@descope/node-sdk": "^1.6.4",
