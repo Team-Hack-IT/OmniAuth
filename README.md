@@ -24,7 +24,7 @@ OmniAuth provides a blockchain-based identity management solution that replaces 
 -   Frontend
 
     -   React
-    -   WebJS
+    -   Tailwind
 
 -   Smart Contract
     -   Solidity
