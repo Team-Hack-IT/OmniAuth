@@ -4,25 +4,27 @@ import { create, update } from "../../utils/model";
 import { Request, Response, NextFunction } from "express";
 import { BadRequest, ServerError } from "../../utils/error";
 
+const validAttributes = [
+    "firstname",
+    "lastname",
+    "email",
+    "address",
+    "city",
+    "state",
+    "country",
+    "birthDate",
+    "postalCode",
+];
+
 const createUser = async (req: Request, res: Response, next: NextFunction) => {
     try {
-        const requiredAttributes = [
-            "firstname",
-            "lastname",
-            "email",
-            "country",
-            "address",
-            "state",
-            "birthDate",
-            "postalCode",
-        ];
         const { body } = req;
-        const hasAllRequiredAttributes = requiredAttributes.every(
+        const hasAllRequiredAttributes = validAttributes.every(
             (attr) => body[attr]
         );
         if (
             !hasAllRequiredAttributes ||
-            Object.keys(body).length !== requiredAttributes.length
+            Object.keys(body).length !== validAttributes.length
         ) {
             throw new BadRequest();
         }
@@ -41,17 +43,7 @@ const createUser = async (req: Request, res: Response, next: NextFunction) => {
 
 const updateUser = async (req: Request, res: Response, next: NextFunction) => {
     try {
-        const validAttributes = [
-            "firstname",
-            "lastname",
-            "country",
-            "state",
-            "city",
-            "address",
-            "postalCode",
-            "birthDate",
-        ];
-        await update(req.user.role, req.body, "user", validAttributes);
+        await update(req.subject, req.body, "user", validAttributes);
         res.status(200).json({ message: "User Succesfully Updated" });
     } catch (error) {
         next(error);

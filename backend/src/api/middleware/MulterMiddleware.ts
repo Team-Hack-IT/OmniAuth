@@ -12,9 +12,14 @@ const upload = multer({
 
 const clamscan = new NodeClam().init({
     removeInfected: true,
-    quarantineInfected: "~/infected/",
     scanLog: "../logs/node-clam",
     debugMode: true,
+    clamdscan: {
+        socket: "/var/run/clamav/clamd.sock",
+        host: "",
+        timeout: 20000,
+    },
+    preference: "clamdscan",
 });
 
 const handleMulterError = (err: multer.MulterError, res: Response) => {

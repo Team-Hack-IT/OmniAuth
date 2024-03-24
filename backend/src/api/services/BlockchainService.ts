@@ -1,48 +1,69 @@
-import { TronWeb } from "tronweb";
-import * as ContractABI from "../../../../smartContract/artifacts...MyContract.json";
+import ContractABI from "../../../../smartContract/artifacts...MyContract.json";
+import TronWeb from "tronweb";
 import dotenv from "dotenv";
+import { ServerError } from "../../utils/error";
+import "@daochild/tronweb-typescript";
 
 dotenv.config();
 
 const tronWeb = new TronWeb({
-    fullHost: process.env.CONTRACT_URL,
+    fullNode: process.env.CONTRACT_URL,
+    privateKey: process.env.PRIVATE_KEY,
+    eventServer: process.env.EVENT_SERVER,
+    solidityNode: process.env.SOLIDITY_NODE,
 });
 
 const contractAddress = process.env.CONTRACT_ADDRESS;
-const contract = tronWeb.contract(ContractABI.abi, contractAddress);
+const contract = tronWeb.contract(ContractABI.abi, contractAddress!);
 
+/**
+ * Registers a user in the blockchain.
+ * @returns {Promise<object>} A promise that resolves to the result of the registration.
+ * @throws {ServerError} If an error occurs during the registration process.
+ */
 export function registerUser() {
-    contract
+    return contract
         .registerUser()
         .send({
             feeLimit: 1_000_000,
             callValue: 0,
             shouldPollResponse: true,
         })
-        .then((result: any) => {
-            console.log("User registered:", result);
+        .then((result: object) => {
+            return result;
         })
-        .catch((error: any) => {
-            console.error("Error registering user:", error);
+        .catch(() => {
+            throw new ServerError();
         });
 }
 
-export function approveUser(userId: number) {
-    contract
+/**
+ * Approves a user in the blockchain.
+ *
+ * @param userId - The ID of the user to be approved.
+ * @returns A Promise that resolves to a boolean indicating the success of the approval.
+ * @throws {ServerError} If an error occurs during the approval process.
+ */
+export function approveUser(userId: number): Promise<boolean> {
+    return contract
         .approveUser(userId)
         .send({
             feeLimit: 1_000_000,
             callValue: 0,
             shouldPollResponse: true,
         })
-        .then((result: any) => {
-            console.log("User approved:", result);
+        .then((result: boolean) => {
+            return result;
         })
-        .catch((error: any) => {
-            console.error("Error approving user:", error);
+        .catch(() => {
+            throw new ServerError();
         });
 }
 
+/**
+ * Sets the data in the contract.
+ * @param data - The data to be set in the contract.
+ */
 export function setData(data: string) {
     contract
         .setData(data)
@@ -51,34 +72,41 @@ export function setData(data: string) {
             callValue: 0,
             shouldPollResponse: true,
         })
-        .then((result: any) => {
-            console.log("Data set:", result);
-        })
-        .catch((error: any) => {
-            console.error("Error setting data:", error);
+        .catch(() => {
+            throw new ServerError();
         });
 }
 
+/**
+ * Retrieves the owner of the contract.
+ * @returns A Promise that resolves to the owner address.
+ * @throws {ServerError} If there is an error retrieving the owner.
+ */
 export function getOwner() {
-    contract
+    return contract
         .getOwner()
         .call()
-        .then((result: any) => {
-            console.log("Contract owner:", result);
+        .then((result: string) => {
+            return result;
         })
-        .catch((error: any) => {
-            console.error("Error getting contract owner:", error);
+        .catch(() => {
+            throw new ServerError();
         });
 }
 
+/**
+ * Retrieves data from the contract.
+ * @returns A Promise that resolves to the retrieved data.
+ * @throws {ServerError} If there is an error retrieving the data.
+ */
 export function getData() {
-    contract
+    return contract
         .getData()
         .call()
-        .then((result: any) => {
-            console.log("Data:", result);
+        .then((result: string) => {
+            return result;
         })
-        .catch((error: any) => {
-            console.error("Error getting data:", error);
+        .catch(() => {
+            throw new ServerError();
         });
 }

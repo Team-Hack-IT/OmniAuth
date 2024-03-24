@@ -4,7 +4,7 @@ import { ServerError } from "../utils/error";
 
 dotenv.config();
 
-function connectDescope() {
+export default function connectDescope() {
     try {
         return DescopeClient({
             projectId: process.env.PROJECT_ID!,
@@ -14,5 +14,3 @@ function connectDescope() {
         throw new ServerError();
     }
 }
-
-export default connectDescope;

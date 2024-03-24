@@ -2,11 +2,13 @@ import express, { Request, Response } from "express";
 import cookieParser from "cookie-parser";
 import cors from "cors";
 import helmet from "helmet";
-import yaml from "yamljs";
 import swaggerUi from "swagger-ui-express";
+import yaml from "yamljs";
 import sessionMiddleware from "./api/middleware/SessionMiddleware";
-import UserRoute from "./api/routes/UserRoute";
 import errorMiddleware from "./api/middleware/ErrorMiddleware";
+import rateLimiter from "./api/middleware/RateLimiter";
+import BusinessRoute from "./api/routes/BusinessRoute";
+import UserRoute from "./api/routes/UserRoute";
 
 const app = express();
 const port = process.env.PORT || 3000;
@@ -39,6 +41,7 @@ if (environment === "development") {
     app.use(cors());
 }
 
+app.use(rateLimiter);
 app.use(
     "/api-docs",
     swaggerUi.serve,
@@ -46,6 +49,7 @@ app.use(
 );
 app.use(sessionMiddleware);
 app.use(UserRoute);
+app.use(BusinessRoute);
 
 app.use((req: Request, res: Response) => {
     res.status(404).json({ error: "Not Found" });

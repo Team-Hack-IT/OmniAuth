@@ -1,12 +1,1 @@
-prepare-commit-msg
-h*
-pre-push
-post-commit
-post-checkout
-post-applypatch
-pre-rebase
-post-rewrite
-commit-msg
-applypatch-msg
-pre-applypatch
-pre-auto-gc
+*
