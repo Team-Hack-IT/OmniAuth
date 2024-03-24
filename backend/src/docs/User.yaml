@@ -4,7 +4,7 @@ info:
     description: Documentation for the endpoint of the omni auth user API
     version: 1.0.0
 paths:
-    /signup:
+    /api/signup:
         post:
             summary: Create a new user
             description: Endpoint to create a new user.
@@ -20,17 +20,13 @@ paths:
                     content:
                         application/json:
                             schema:
-                                $ref: "#/components/schemas/User"
-                    example:
-                        username: john_doe
-                        password: password123
-                        email: john.doe@example.com
+                                $ref: "#/components/schemas/UserSignUp"
                 "400":
                     description: Invalid request payload
                 "500":
                     description: Internal server error
 
-    /users/profile:
+    /api/user/profile:
         get:
             summary: Get user profile
             description: Endpoint to get the profile of the authenticated user.
@@ -41,15 +37,12 @@ paths:
                         application/json:
                             schema:
                                 $ref: "#/components/schemas/User"
-                    example:
-                        username: john_doe
-                        email: john.doe@example.com
                 "401":
                     description: Unauthorized access
                 "500":
                     description: Internal server error
 
-    /users/updatepassword:
+    /api/user/update-password:
         post:
             summary: Update user password
             description: Endpoint to update the password of the authenticated user.
@@ -58,7 +51,10 @@ paths:
                 content:
                     application/json:
                         schema:
-                            $ref: "#/components/schemas/UpdatePasswordRequest"
+                            type: object
+                            properties:
+                                password:
+                                    type: string
             responses:
                 "200":
                     description: Password updated successfully
@@ -72,7 +68,7 @@ paths:
                 currentPassword: oldpassword123
                 newPassword: newpassword123
 
-    /users/updateemail:
+    /api/user/update-email:
         post:
             summary: Update user email
             description: Endpoint to update the email of the authenticated user.
@@ -81,7 +77,10 @@ paths:
                 content:
                     application/json:
                         schema:
-                            $ref: "#/components/schemas/UpdateEmailRequest"
+                            type: object
+                            properties:
+                                email:
+                                    type: string
             responses:
                 "200":
                     description: Email updated successfully
@@ -91,10 +90,8 @@ paths:
                     description: Unauthorized access
                 "500":
                     description: Internal server error
-            example:
-                newEmail: newemail@example.com
 
-    /users/delete:
+    /api/user/delete:
         delete:
             summary: Delete user
             description: Endpoint to delete the authenticated user.
@@ -106,7 +103,7 @@ paths:
                 "500":
                     description: Internal server error
 
-    /users/update:
+    /api/user/update:
         post:
             summary: Update user
             description: Endpoint to update the details of the authenticated user.
@@ -125,20 +122,20 @@ paths:
                     description: Unauthorized access
                 "500":
                     description: Internal server error
-            example:
-                username: new_username
-                email: new_email@example.com
 
-    /verifyphone:
+    /api/user/verify-phone:
         post:
             summary: Verify phone number
-            description: Endpoint to verify the phone number of the authenticated user.
+            description: Endpoint to verify the phone number of the authenticated user. Phone number must follow the E.164 format.
             requestBody:
                 required: true
                 content:
                     application/json:
                         schema:
-                            $ref: "#/components/schemas/VerifyPhoneRequest"
+                            type: object
+                            properties:
+                                phone:
+                                    type: string
             responses:
                 "200":
                     description: Phone number verified successfully
@@ -148,10 +145,8 @@ paths:
                     description: Unauthorized access
                 "500":
                     description: Internal server error
-            example:
-                phoneNumber: +1234567890
 
-    /users/logoutall:
+    /api/user/logout-all:
         get:
             summary: Logout from all devices
             description: Endpoint to logout the authenticated user from all devices.
@@ -163,7 +158,7 @@ paths:
                 "500":
                     description: Internal server error
 
-    /users/logout:
+    /api/user/logout:
         get:
             summary: Logout
             description: Endpoint to logout the authenticated user.
@@ -174,3 +169,269 @@ paths:
                     description: Unauthorized access
                 "500":
                     description: Internal server error
+
+    /api/user/verify-id:
+        post:
+            summary: Verify user identity
+            description: Endpoint to verify the identity of the authenticated user.
+            requestBody:
+                required: true
+                content:
+                    multipart/form-data:
+                        schema:
+                            type: object
+                            properties:
+                                idCard:
+                                    type: string
+                                    format: binary
+            responses:
+                "200":
+                    description: Identity verified successfully
+                "400":
+                    description: Invalid request payload
+                "401":
+                    description: Unauthorized access
+                "500":
+                    description: Internal server error
+
+    /api/user/files/upload/{type}:
+        post:
+            summary: Upload file
+            description: Endpoint to upload a file for the authenticated user.
+            parameters:
+                - in: path
+                  name: type
+                  required: true
+                  schema:
+                      $ref: "#/components/schemas/FileType"
+            requestBody:
+                required: true
+                content:
+                    multipart/form-data:
+                        schema:
+                            type: object
+                            properties:
+                                file:
+                                    type: string
+                                    format: binary
+            responses:
+                "200":
+                    description: File uploaded successfully
+                "400":
+                    description: Invalid request payload
+                "401":
+                    description: Unauthorized access
+                "409":
+                    description: File already exists
+                "413":
+                    description: File too large
+                "500":
+                    description: Internal server error
+
+    /api/user/files/download/{type}:
+        get:
+            summary: Download file
+            description: Endpoint to download a specified file for the authenticated user.
+            parameters:
+                - in: path
+                  name: type
+                  required: true
+                  schema:
+                      $ref: "#/components/schemas/FileType"
+            responses:
+                "200":
+                    description: File downloaded successfully
+                "401":
+                    description: Unauthorized access
+                "500":
+                    description: Internal server error
+
+    /api/user/upload-picture:
+        post:
+            summary: Upload picture
+            description: Endpoint to upload a picture for the authenticated user.
+            requestBody:
+                required: true
+                content:
+                    multipart/form-data:
+                        schema:
+                            type: object
+                            properties:
+                                picture:
+                                    type: string
+                                    format: binary
+            responses:
+                "200":
+                    description: Picture uploaded successfully
+                "400":
+                    description: Invalid request payload
+                "401":
+                    description: Unauthorized access
+                "409":
+                    description: Picture already exists
+                "413":
+                    description: Picture too large
+                "500":
+                    description: Internal server error
+
+    /api/user/files/delete/{type}:
+        delete:
+            summary: Delete file
+            description: Endpoint to delete a specified file for the authenticated user.
+            parameters:
+                - in: path
+                  name: type
+                  required: true
+                  schema:
+                      $ref: "#/components/schemas/FileType"
+            responses:
+                "200":
+                    description: File deleted successfully
+                "401":
+                    description: Unauthorized access
+                "500":
+                    description: Internal server error
+
+    /api/user/services/get-all-business:
+        get:
+            summary: Get all business
+            description: Endpoint to get all business for the authenticated user.
+            responses:
+                "200":
+                    description: Business retrieved successfully
+                    schema:
+                        type: array
+                        items:
+                            $ref: "#/components/schemas/Business"
+                "401":
+                    description: Unauthorized access
+                "500":
+                    description: Internal server error
+
+components:
+    schemas:
+        User:
+            type: object
+            properties:
+                address:
+                    type:
+                        - string
+                        - null
+                birthDate:
+                    type:
+                        - string
+                        - null
+                city:
+                    type:
+                        - string
+                        - null
+                country:
+                    type: string
+                createdAt:
+                    type: string
+                document:
+                    type:
+                        - object
+                        - null
+                email:
+                    type: string
+                firstname:
+                    type: string
+                history:
+                    type:
+                        - object
+                        - null
+                id:
+                    type: string
+                isVerified:
+                    type: boolean
+                    default: false
+                lastname:
+                    type: string
+                phone:
+                    type:
+                        - string
+                        - null
+                picture:
+                    type:
+                        - string
+                        - null
+                postalCode:
+                    type:
+                        - string
+                        - null
+                role: "user"
+                state:
+                    type:
+                        - string
+                        - null
+                updatedAt:
+                    type: string
+
+        Business:
+            type: object
+            properties:
+                id:
+                    type: string
+                name:
+                    type: string
+                description:
+                    type: string
+                address:
+                    type: string
+                industry:
+                    type: string
+                website:
+                    type: string
+                scope:
+                    type: object
+
+        UserSignUp:
+            type: object
+            properties:
+                email:
+                    type: string
+                firstname:
+                    type: string
+                lastname:
+                    type: string
+                country:
+                    type: string
+                address:
+                    type: string
+                state:
+                    type: string
+                birthDate:
+                    type: string
+                    format: date
+                postalCode:
+                    type: string
+
+        FileType:
+            type: string
+            enum:
+                - picture
+                - idCard
+                - driverLicense
+                - passport
+
+        UpdateUserRequest:
+            type: object
+            properties:
+                firstname:
+                    type: string
+                lastname:
+                    type: string
+                email:
+                    type: string
+                country:
+                    type: string
+                address:
+                    type: string
+                state:
+                    type: string
+                birthDate:
+                    type: string
+                    format: date
+                postalCode:
+                    type: string

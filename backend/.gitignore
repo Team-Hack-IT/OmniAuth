@@ -1,7 +1,12 @@
 .env
-.env.sample
 node_modules/
 build/
 *.pfx
 *.txt
+.env
 .env.local
+.DS_Store
+.vscode/
+src/supabase/
+*.log
+./eng.traineddata

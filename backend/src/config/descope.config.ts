@@ -1,22 +1,16 @@
 import DescopeClient from "@descope/node-sdk";
 import dotenv from "dotenv";
+import { ServerError } from "../utils/error";
 
 dotenv.config();
 
-/**
- * Connects to Descope and returns a DescopeClient instance.
- * @returns {DescopeClient | null} The DescopeClient instance if connected successfully, otherwise null.
- */
-function connectDescope() {
+export default function connectDescope() {
     try {
         return DescopeClient({
-            projectId: process.env.PROJECT_ID || "None",
-            managementKey: process.env.MGT_KEY || "None",
+            projectId: process.env.PROJECT_ID!,
+            managementKey: process.env.MGT_KEY!,
         });
     } catch (error) {
-        console.error("Could not connect to Descope: ", error);
-        return null;
+        throw new ServerError();
     }
 }
-
-export default connectDescope;
