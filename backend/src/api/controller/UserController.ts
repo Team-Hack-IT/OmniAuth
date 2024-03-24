@@ -4,7 +4,7 @@ import { create, update } from "../../utils/model";
 import { Request, Response, NextFunction } from "express";
 import { BadRequest, ServerError } from "../../utils/error";
 
-const validAttributes = [
+const requiredAttributes = [
     "firstname",
     "lastname",
     "email",
@@ -19,12 +19,12 @@ const validAttributes = [
 const createUser = async (req: Request, res: Response, next: NextFunction) => {
     try {
         const { body } = req;
-        const hasAllRequiredAttributes = validAttributes.every(
+        const hasAllRequiredAttributes = requiredAttributes.every(
             (attr) => body[attr]
         );
         if (
             !hasAllRequiredAttributes ||
-            Object.keys(body).length !== validAttributes.length
+            Object.keys(body).length !== requiredAttributes.length
         ) {
             throw new BadRequest();
         }
@@ -43,6 +43,7 @@ const createUser = async (req: Request, res: Response, next: NextFunction) => {
 
 const updateUser = async (req: Request, res: Response, next: NextFunction) => {
     try {
+        const [email, ...validAttributes] = requiredAttributes;
         await update(req.subject, req.body, "user", validAttributes);
         res.status(200).json({ message: "User Succesfully Updated" });
     } catch (error) {
