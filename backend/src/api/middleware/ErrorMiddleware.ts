@@ -1,10 +1,11 @@
-import { Request, Response } from "express";
+import { Request, Response, NextFunction } from "express";
 import logger from "../../config/logger";
 
 export default async function errorMiddleware(
     err: Error,
     req: Request,
-    res: Response
+    res: Response,
+    next: NextFunction
 ) {
     switch (err.name) {
         case "BadRequest":
@@ -21,6 +22,9 @@ export default async function errorMiddleware(
         case "NotFound":
             res.status(404).json({ error: err.message });
             break;
+        case "Conflict":
+            logger.info("Conflict");
+            res.status(409).json({ error: err.message });
         default:
             logger.error(`${err.message}`);
             res.status(500).json({ error: "Internal Server Error" });

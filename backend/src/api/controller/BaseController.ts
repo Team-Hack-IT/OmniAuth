@@ -17,7 +17,7 @@ const profile = async (req: Request, res: Response) => {
 
 const del = async (req: Request, res: Response, next: NextFunction) => {
     try {
-        const { email } = req.user;
+        const { email, id, role } = req.user;
 
         if (!email) throw new BadRequest("Email not found");
 
@@ -25,10 +25,7 @@ const del = async (req: Request, res: Response, next: NextFunction) => {
         await descopeClient.logoutAll(req.token);
         await descopeClient.management.user.delete(email);
 
-        const { error } = await supabase
-            .from(req.user.role)
-            .delete()
-            .eq("id", req.user.id);
+        const { error } = await supabase.from(role).delete().eq("id", id);
 
         if (error) throw new ServerError();
 
@@ -42,6 +39,7 @@ const del = async (req: Request, res: Response, next: NextFunction) => {
 const updateEmail = async (req: Request, res: Response, next: NextFunction) => {
     try {
         const { email } = req.body;
+        const { id, role, email: userEmail } = req.user;
         const pattern =
             /^[a-za-z0-9.!#$%&'*+/=?^_`{|}~-]+@[a-za-z0-9](?:[a-za-z0-9-]{0,61}[a-za-z0-9])?(?:\.[a-za-z0-9](?:[a-za-z0-9-]{0,61}[a-za-z0-9])?)*$/;
         const isValidEmail = pattern.test(email);
@@ -49,15 +47,15 @@ const updateEmail = async (req: Request, res: Response, next: NextFunction) => {
         if (!email || !req.token || !isValidEmail) throw new BadRequest();
 
         await connectDescope().magicLink.update.email(
-            req.user.email,
+            userEmail,
             email,
             req.token
         );
 
         const { error } = await supabase
-            .from(req.user.role)
+            .from(role)
             .update({ email })
-            .eq("id", req.user.id);
+            .eq("id", id);
 
         if (error) throw new ServerError();
 
@@ -111,33 +109,29 @@ const setPassword = async (
     cb: (email: string, hash?: string, token?: string) => void
 ) => {
     try {
-        const { email } = req.user;
+        const { id, role, email } = req.user;
         const { password } = req.body;
         const pattern = /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)[a-zA-Z\d]{8,}$/;
         const isStrong = pattern.test(password);
+        const length = Object.keys(req.body).length;
 
-        if (
-            !password ||
-            !email ||
-            Object.keys(req.body).length != 1 ||
-            !isStrong
-        ) {
-            throw new Error("Bad Request");
+        if (!password || !email || length != 1 || !isStrong) {
+            throw new BadRequest();
         }
 
         const hash = await bcrypt.hash(password, 10).catch(() => {
-            throw new Error("Internal Server Error");
+            throw new ServerError();
         });
 
         cb(email, hash, req.token);
         const { error } = await supabase
-            .from(req.user.role)
+            .from(role)
             .update({ password: hash })
-            .eq("id", req.user.id);
+            .eq("id", id);
 
-        if (error) throw new Error("Internal Server Error");
+        if (error) throw new ServerError();
     } catch (error) {
-        throw new Error("Internal Server Error");
+        throw error;
     }
 };
 
