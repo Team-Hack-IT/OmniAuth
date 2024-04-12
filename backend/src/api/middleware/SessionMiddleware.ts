@@ -1,7 +1,7 @@
 import connectDescope from "../../config/descope.config";
 import logger from "../../config/logger";
 import { Response, Request, NextFunction } from "express";
-import { Unauthorized } from "../../utils/error";
+import { ServerError, Unauthorized } from "../../utils/error";
 
 export default async function sessionMiddleware(
     req: Request,
@@ -15,8 +15,10 @@ export default async function sessionMiddleware(
 
         const authInfo = await connectDescope()
             .validateSession(token)
-            .catch(() => {
-                throw new Unauthorized();
+            .catch((error) => {
+                if (error.message.includes("JWTExpired"))
+                    throw new Unauthorized();
+                throw new ServerError();
             });
 
         if (!authInfo || !authInfo.token.sub) throw new Unauthorized();

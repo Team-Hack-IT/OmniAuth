@@ -9,6 +9,7 @@ import {
     Unauthorized,
 } from "../../utils/error";
 import { deleteBucket } from "../../utils/file";
+import { SdkResponse } from "@descope/node-sdk";
 
 const profile = async (req: Request, res: Response) => {
     const { password, subject, bucketId, ...user } = req.user;
@@ -71,7 +72,7 @@ const updatePassword = async (
     next: NextFunction
 ) => {
     try {
-        await setPassword(req, (email, hash, token) => {
+        await setPassword(req, async (email, hash, token) => {
             if (!hash) throw new ServerError();
             connectDescope()
                 .password.update(email, hash, token)
@@ -91,11 +92,15 @@ const resetPassword = async (
     next: NextFunction
 ) => {
     try {
-        await setPassword(req, (email) => {
+        await setPassword(req, async (email, hash) => {
             connectDescope()
-                .password.sendReset(email, "http://omni-auth.vercel.app/")
+                .management.user.setPassword(email, hash)
+                //sendReset(email, "http://omni-auth.vercel.app/")
                 .catch(() => {
                     throw new ServerError();
+                })
+                .then((response) => {
+                    console.log(response);
                 });
         });
         res.status(200).json({ message: "Password Succesfully Changed" });
@@ -106,24 +111,25 @@ const resetPassword = async (
 
 const setPassword = async (
     req: Request,
-    cb: (email: string, hash?: string, token?: string) => void
+    cb: (email: string, hash: string, token?: string) => Promise<void>
 ) => {
     try {
         const { id, role, email } = req.user;
         const { password } = req.body;
-        const pattern = /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)[a-zA-Z\d]{8,}$/;
+        const pattern =
+            /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[@$!%*?&])[A-Za-z\d@$!%*?&]{8,}$/;
         const isStrong = pattern.test(password);
         const length = Object.keys(req.body).length;
 
-        if (!password || !email || length != 1 || !isStrong) {
-            throw new BadRequest();
-        }
+        if (!isStrong) throw new BadRequest("Weak password");
+        if (!password || !email || length != 1) throw new BadRequest();
 
         const hash = await bcrypt.hash(password, 10).catch(() => {
             throw new ServerError();
         });
 
-        cb(email, hash, req.token);
+        await cb(email, hash, req.token);
+
         const { error } = await supabase
             .from(role)
             .update({ password: hash })
@@ -144,7 +150,7 @@ const validatePassword = async (
         const { password } = req.user;
 
         if (Object.keys(req.body).length != 1) throw new BadRequest();
-        if (!password) throw new NotFound();
+        if (!password) throw new NotFound("Password Not Set");
 
         await bcrypt
             .compare(req.body.password, password)

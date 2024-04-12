@@ -2,7 +2,7 @@ import multer from "multer";
 import NodeClam from "clamscan";
 import * as fileService from "../../utils/file";
 import { Request, Response } from "express";
-import { BadRequest, NotFound, ServerError } from "../../utils/error";
+import { BadRequest, ServerError } from "../../utils/error";
 
 const upload = multer({
     limits: {

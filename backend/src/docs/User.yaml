@@ -3,6 +3,7 @@ info:
     title: Omni Auth User API
     description: Documentation for the endpoint of the omni auth user API
     version: 1.0.0
+
 paths:
     /api/signup:
         post:

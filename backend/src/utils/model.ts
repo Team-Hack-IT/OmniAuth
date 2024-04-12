@@ -9,7 +9,10 @@ import { BadRequest, Conflict, NotFound, ServerError } from "./error";
  * @throws {ServerError} If there is an error while loading the data.
  * @throws {NotFound} If no data is found for the given subject.
  */
-async function loadData(sub: string, table: string): Promise<object | null> {
+export async function loadData(
+    sub: string,
+    table: string
+): Promise<object | null> {
     const { data, error } = await supabase
         .from(table)
         .select("*")
@@ -21,7 +24,7 @@ async function loadData(sub: string, table: string): Promise<object | null> {
     return data[0];
 }
 
-async function create(subject: string, table: string, obj: object) {
+export async function create(subject: string, table: string, obj: object) {
     const data = await loadData(subject, table);
 
     if (data) throw new Conflict("User already exists");
@@ -54,7 +57,7 @@ async function create(subject: string, table: string, obj: object) {
  * @throws {BadRequest} If any of the attributes are not valid.
  * @throws {ServerError} If an error occurs during the update.
  */
-async function update(
+export async function update(
     subject: string,
     attributes: object,
     table: string,
@@ -72,5 +75,3 @@ async function update(
 
     if (error) throw new ServerError();
 }
-
-export { loadData, create, update };
