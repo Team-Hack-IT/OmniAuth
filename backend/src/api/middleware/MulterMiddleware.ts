@@ -10,7 +10,7 @@ const upload = multer({
     },
 });
 
-const clamscan = new NodeClam().init({
+const options = {
     removeInfected: true,
     scanLog: "../logs/node-clam",
     debugMode: true,
@@ -20,7 +20,7 @@ const clamscan = new NodeClam().init({
         timeout: 20000,
     },
     preference: "clamdscan",
-});
+};
 
 const handleMulterError = (err: multer.MulterError, res: Response) => {
     switch (err.code) {
@@ -52,7 +52,7 @@ export default async function uploadFile(
             const contentType = req.file.mimetype;
             const file = req.file.buffer;
 
-            (await clamscan)
+            (await new NodeClam().init(options))
                 .scanFile(req.file.path)
                 .then(({ file, isInfected }) => {
                     if (isInfected) throw new BadRequest();

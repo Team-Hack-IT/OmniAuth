@@ -23,7 +23,7 @@ const user: User = {
     role: "",
     state: null,
     subject: "",
-    updatedAt: "",
+    updated_at: "",
 };
 
 describe("compareImages", () => {

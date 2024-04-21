@@ -9,6 +9,7 @@ import errorMiddleware from "./api/middleware/ErrorMiddleware";
 import rateLimiter from "./api/middleware/RateLimiter";
 import BusinessRoute from "./api/routes/BusinessRoute";
 import UserRoute from "./api/routes/UserRoute";
+import generateDocs from "./utils/generateDocs";
 
 const app = express();
 const port = process.env.PORT || 3000;
@@ -42,11 +43,7 @@ if (environment === "development") {
 }
 
 app.use(rateLimiter);
-app.use(
-    "/api-docs",
-    swaggerUi.serve,
-    swaggerUi.setup(yaml.load("./src/docs/User.yaml"))
-);
+app.use("/api-docs", swaggerUi.serve, swaggerUi.setup(generateDocs()));
 app.use(sessionMiddleware);
 app.use(UserRoute);
 app.use(BusinessRoute);

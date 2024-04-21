@@ -9,6 +9,8 @@ paths:
         post:
             summary: Create a new user
             description: Endpoint to create a new user.
+            tags:
+                - User
             requestBody:
                 required: true
                 content:
@@ -31,6 +33,8 @@ paths:
         get:
             summary: Get user profile
             description: Endpoint to get the profile of the authenticated user.
+            tags:
+                - User
             responses:
                 "200":
                     description: User profile retrieved successfully
@@ -47,6 +51,8 @@ paths:
         post:
             summary: Update user password
             description: Endpoint to update the password of the authenticated user.
+            tags:
+                - User
             requestBody:
                 required: true
                 content:
@@ -73,6 +79,8 @@ paths:
         post:
             summary: Update user email
             description: Endpoint to update the email of the authenticated user.
+            tags:
+                - User
             requestBody:
                 required: true
                 content:
@@ -96,6 +104,8 @@ paths:
         delete:
             summary: Delete user
             description: Endpoint to delete the authenticated user.
+            tags:
+                - User
             responses:
                 "200":
                     description: User deleted successfully
@@ -108,6 +118,8 @@ paths:
         post:
             summary: Update user
             description: Endpoint to update the details of the authenticated user.
+            tags:
+                - User
             requestBody:
                 required: true
                 content:
@@ -128,6 +140,8 @@ paths:
         post:
             summary: Verify phone number
             description: Endpoint to verify the phone number of the authenticated user. Phone number must follow the E.164 format.
+            tags:
+                - User
             requestBody:
                 required: true
                 content:
@@ -151,6 +165,8 @@ paths:
         get:
             summary: Logout from all devices
             description: Endpoint to logout the authenticated user from all devices.
+            tags:
+                - User
             responses:
                 "200":
                     description: User logged out from all devices successfully
@@ -163,6 +179,8 @@ paths:
         get:
             summary: Logout
             description: Endpoint to logout the authenticated user.
+            tags:
+                - User
             responses:
                 "200":
                     description: User logged out successfully
@@ -175,6 +193,8 @@ paths:
         post:
             summary: Verify user identity
             description: Endpoint to verify the identity of the authenticated user.
+            tags:
+                - User
             requestBody:
                 required: true
                 content:
@@ -199,6 +219,8 @@ paths:
         post:
             summary: Upload file
             description: Endpoint to upload a file for the authenticated user.
+            tags:
+                - User
             parameters:
                 - in: path
                   name: type
@@ -233,6 +255,8 @@ paths:
         get:
             summary: Download file
             description: Endpoint to download a specified file for the authenticated user.
+            tags:
+                - User
             parameters:
                 - in: path
                   name: type
@@ -251,6 +275,8 @@ paths:
         post:
             summary: Upload picture
             description: Endpoint to upload a picture for the authenticated user.
+            tags:
+                - User
             requestBody:
                 required: true
                 content:
@@ -279,6 +305,8 @@ paths:
         delete:
             summary: Delete file
             description: Endpoint to delete a specified file for the authenticated user.
+            tags:
+                - User
             parameters:
                 - in: path
                   name: type
@@ -297,6 +325,8 @@ paths:
         get:
             summary: Get all business
             description: Endpoint to get all business for the authenticated user.
+            tags:
+                - User
             responses:
                 "200":
                     description: Business retrieved successfully
@@ -308,131 +338,3 @@ paths:
                     description: Unauthorized access
                 "500":
                     description: Internal server error
-
-components:
-    schemas:
-        User:
-            type: object
-            properties:
-                address:
-                    type:
-                        - string
-                        - null
-                birthDate:
-                    type:
-                        - string
-                        - null
-                city:
-                    type:
-                        - string
-                        - null
-                country:
-                    type: string
-                createdAt:
-                    type: string
-                document:
-                    type:
-                        - object
-                        - null
-                email:
-                    type: string
-                firstname:
-                    type: string
-                history:
-                    type:
-                        - object
-                        - null
-                id:
-                    type: string
-                isVerified:
-                    type: boolean
-                    default: false
-                lastname:
-                    type: string
-                phone:
-                    type:
-                        - string
-                        - null
-                picture:
-                    type:
-                        - string
-                        - null
-                postalCode:
-                    type:
-                        - string
-                        - null
-                role: "user"
-                state:
-                    type:
-                        - string
-                        - null
-                updatedAt:
-                    type: string
-
-        Business:
-            type: object
-            properties:
-                id:
-                    type: string
-                name:
-                    type: string
-                description:
-                    type: string
-                address:
-                    type: string
-                industry:
-                    type: string
-                website:
-                    type: string
-                scope:
-                    type: object
-
-        UserSignUp:
-            type: object
-            properties:
-                email:
-                    type: string
-                firstname:
-                    type: string
-                lastname:
-                    type: string
-                country:
-                    type: string
-                address:
-                    type: string
-                state:
-                    type: string
-                birthDate:
-                    type: string
-                    format: date
-                postalCode:
-                    type: string
-
-        FileType:
-            type: string
-            enum:
-                - picture
-                - idCard
-                - driverLicense
-                - passport
-
-        UpdateUserRequest:
-            type: object
-            properties:
-                firstname:
-                    type: string
-                lastname:
-                    type: string
-                email:
-                    type: string
-                country:
-                    type: string
-                address:
-                    type: string
-                state:
-                    type: string
-                birthDate:
-                    type: string
-                    format: date
-                postalCode:
-                    type: string

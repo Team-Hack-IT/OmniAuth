@@ -9,7 +9,6 @@ import {
     Unauthorized,
 } from "../../utils/error";
 import { deleteBucket } from "../../utils/file";
-import { SdkResponse } from "@descope/node-sdk";
 
 const profile = async (req: Request, res: Response) => {
     const { password, subject, bucketId, ...user } = req.user;

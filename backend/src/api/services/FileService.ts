@@ -7,59 +7,52 @@ import { BadRequest, NotFound, ServerError } from "../../utils/error";
 import { User } from "../../@types/model.types";
 
 const verifyId = async (req: Request, res: Response, next: NextFunction) => {
+    const user = req.user as User;
+
     try {
-        const sub = req.subject;
-        const user = req.user as User;
         const { type } = req.params;
-        const { picture, bucketId, role } = user;
-        const document = user.document
-            ? JSON.parse(user.document.toString())
-            : {};
+        const { picture, bucketId, role, document } = user;
 
-        if (!type || !sub) throw new BadRequest();
-        if (!document || !("idCard" in document) || !picture || !bucketId)
-            throw new NotFound();
+        if (!type || !user || !picture || !bucketId) throw new BadRequest();
 
-        const idCard = await fileService.download(
-            document.idCard,
-            bucketId,
-            role
-        );
-        const photo = await fileService.download(picture, bucketId, role);
+        const parsedDocument = document ? JSON.parse(document.toString()) : {};
+
+        if (!parsedDocument.idCard) throw new NotFound();
+
+        const [idCard, photo] = await Promise.all([
+            fileService.download(parsedDocument.idCard, bucketId, role),
+            fileService.download(picture, bucketId, role),
+        ]);
 
         if (!idCard || !photo) throw new NotFound();
 
         const idCardBuffer = Buffer.from(await idCard.arrayBuffer());
-        const photoBuffer = Buffer.from(await photo.arrayBuffer());
-
-        if (!(await matchId(user, idCardBuffer))) {
-            if (user.isVerified) {
-                const { error } = await supabase
-                    .from("user")
-                    .update({ isVerified: false })
-                    .eq("id", req.user.id);
-
-                if (error) throw new ServerError();
-            }
-            return;
-        }
-
-        if (await compareImages(idCardBuffer, photoBuffer)) {
-            if (!user.isVerified) {
-                const { error } = await supabase
-                    .from("user")
-                    .update({ isVerified: true })
-                    .eq("id", req.user.id);
-
-                if (error) throw new ServerError();
-                res.status(200).json({ verified: true });
-            }
-        } else {
-            res.status(401).json({ verified: false });
-        }
+        await compareImages(
+            idCardBuffer,
+            Buffer.from(await photo.arrayBuffer())
+        );
+        await matchId(user, idCardBuffer);
+        res.status(200).json({ verified: true });
     } catch (error) {
+        if (user.isVerified) {
+            await updateUserVerificationStatus(user.id, false).catch((err) => {
+                next(err);
+            });
+        }
         next(error);
     }
+};
+
+const updateUserVerificationStatus = async (
+    userId: string,
+    isVerified: boolean
+) => {
+    const { error } = await supabase
+        .from("user")
+        .update({ isVerified })
+        .eq("id", userId);
+
+    if (error) return Promise.reject(new ServerError());
 };
 
 const uploadPicture = async (
@@ -101,8 +94,9 @@ const uploadAttachment = async (
         const parsedDocument = document ? JSON.parse(document.toString()) : {};
         const { type } = req.params;
 
-        if (!(type in AllowedFileTypes) || type == "picture")
+        if (!(type in AllowedFileTypes) || type === "picture") {
             throw new BadRequest();
+        }
 
         await uploadFile(
             req,
@@ -123,6 +117,7 @@ const uploadAttachment = async (
                     role,
                     parsedDocument[type]
                 );
+                res.status(201).json({ message: "File uploaded successfully" });
             }
         );
     } catch (error) {
@@ -142,16 +137,11 @@ const downloadFile = async (
         const parsedDocument = document ? JSON.parse(document.toString()) : {};
 
         if (!type || !bucketId) throw new BadRequest();
-        if (type == "picture" && !picture) throw new NotFound();
-        if (!(type in parsedDocument) || !parsedDocument[type])
-            throw new NotFound();
 
-        const file = await fileService.download(
-            type == "picture" ? picture : parsedDocument[type],
-            bucketId,
-            role
-        );
+        const fileId = type === "picture" ? picture : parsedDocument[type];
+        if (!fileId) throw new NotFound();
 
+        const file = await fileService.download(fileId, bucketId, role);
         if (!file) throw new NotFound("File doesn't exist");
 
         res.status(200).send(file);
@@ -169,22 +159,21 @@ const deleteFile = async (req: Request, res: Response, next: NextFunction) => {
 
         if (!type || !bucketId) throw new BadRequest();
 
-        if (type == "picture") {
+        let attachmentId: string | null = null;
+        if (type === "picture") {
             if (!picture) throw new NotFound();
+            attachmentId = picture;
             await fileService.del(picture, bucketId, role);
-            await fileService.saveAttachmentId(id, null, role, "picture");
         } else {
-            if (!(type in parsedDocument) || !parsedDocument[type])
+            if (!(type in parsedDocument) || !parsedDocument[type]) {
                 throw new NotFound();
+            }
+            attachmentId = parsedDocument[type];
             await fileService.del(parsedDocument[type], bucketId, role);
             parsedDocument[type] = null;
-            await fileService.saveAttachmentId(
-                id,
-                null,
-                role,
-                parsedDocument[type]
-            );
         }
+
+        await fileService.saveAttachmentId(id, attachmentId, role, type);
 
         res.status(200).json({ message: "File deleted successfully" });
     } catch (error) {
