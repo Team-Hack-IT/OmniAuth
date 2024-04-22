@@ -10,3 +10,4 @@ build/
 src/supabase/
 *.log
 ./eng.traineddata
+.{0-9}*

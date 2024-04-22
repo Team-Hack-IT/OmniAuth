@@ -30,16 +30,16 @@ export async function matchId(user: User, file: Buffer) {
         const {
             data: { text },
         }: { data: { text: string } } = await Tesseract.recognize(file);
-        const { firstname, lastname, birthDate, country } = user;
+        const { firstname, lastname, birth_date, country } = user;
 
-        if (!birthDate || !country || !firstname || !lastname)
+        if (!birth_date || !country || !firstname || !lastname)
             throw new BadRequest();
 
         if (
             !text.includes(country) &&
             !text.includes(firstname) &&
             !text.includes(lastname) &&
-            !text.includes(birthDate)
+            !text.includes(birth_date)
         ) {
             throw new BadRequest("User information does not match");
         }

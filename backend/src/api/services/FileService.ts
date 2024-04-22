@@ -11,17 +11,17 @@ const verifyId = async (req: Request, res: Response, next: NextFunction) => {
 
     try {
         const { type } = req.params;
-        const { picture, bucketId, role, document } = user;
+        const { picture, bucket_id, role, document } = user;
 
-        if (!type || !user || !picture || !bucketId) throw new BadRequest();
+        if (!type || !user || !picture || !bucket_id) throw new BadRequest();
 
         const parsedDocument = document ? JSON.parse(document.toString()) : {};
 
         if (!parsedDocument.idCard) throw new NotFound();
 
         const [idCard, photo] = await Promise.all([
-            fileService.download(parsedDocument.idCard, bucketId, role),
-            fileService.download(picture, bucketId, role),
+            fileService.download(parsedDocument.idCard, bucket_id, role),
+            fileService.download(picture, bucket_id, role),
         ]);
 
         if (!idCard || !photo) throw new NotFound();
@@ -34,7 +34,7 @@ const verifyId = async (req: Request, res: Response, next: NextFunction) => {
         await matchId(user, idCardBuffer);
         res.status(200).json({ verified: true });
     } catch (error) {
-        if (user.isVerified) {
+        if (user.is_verified) {
             await updateUserVerificationStatus(user.id, false).catch((err) => {
                 next(err);
             });
@@ -49,7 +49,7 @@ const updateUserVerificationStatus = async (
 ) => {
     const { error } = await supabase
         .from("user")
-        .update({ isVerified })
+        .update({ is_verified: isVerified })
         .eq("id", userId);
 
     if (error) return Promise.reject(new ServerError());
@@ -94,32 +94,17 @@ const uploadAttachment = async (
         const parsedDocument = document ? JSON.parse(document.toString()) : {};
         const { type } = req.params;
 
-        if (!(type in AllowedFileTypes) || type === "picture") {
-            throw new BadRequest();
-        }
+        if (type === "picture") throw new BadRequest();
 
-        await uploadFile(
-            req,
-            res,
-            async (attachmentId: string, contentType: string) => {
-                if (
-                    !AllowedFileTypes[
-                        type as keyof typeof AllowedFileTypes
-                    ].includes(contentType)
-                ) {
-                    throw new BadRequest();
-                }
-
-                parsedDocument[type] = attachmentId;
-                await fileService.saveAttachmentId(
-                    id,
-                    attachmentId,
-                    role,
-                    parsedDocument[type]
-                );
-                res.status(201).json({ message: "File uploaded successfully" });
-            }
-        );
+        await uploadFile(req, res, async (attachmentId: string) => {
+            parsedDocument[type] = attachmentId;
+            await fileService.saveAttachmentId(
+                id,
+                attachmentId,
+                role,
+                parsedDocument[type]
+            );
+        });
     } catch (error) {
         next(error);
     }
@@ -133,15 +118,15 @@ const downloadFile = async (
     try {
         const { type } = req.params;
         const { user } = req;
-        const { document, role, bucketId, picture } = user as User;
+        const { document, role, bucket_id, picture } = user as User;
         const parsedDocument = document ? JSON.parse(document.toString()) : {};
 
-        if (!type || !bucketId) throw new BadRequest();
+        if (!type || !bucket_id) throw new BadRequest();
 
         const fileId = type === "picture" ? picture : parsedDocument[type];
         if (!fileId) throw new NotFound();
 
-        const file = await fileService.download(fileId, bucketId, role);
+        const file = await fileService.download(fileId, bucket_id, role);
         if (!file) throw new NotFound("File doesn't exist");
 
         res.status(200).send(file);
@@ -154,22 +139,22 @@ const deleteFile = async (req: Request, res: Response, next: NextFunction) => {
     try {
         const { type } = req.params;
         const { user } = req;
-        const { id, document, picture, role, bucketId } = user as User;
+        const { id, document, picture, role, bucket_id } = user as User;
         const parsedDocument = document ? JSON.parse(document.toString()) : {};
 
-        if (!type || !bucketId) throw new BadRequest();
+        if (!type || !bucket_id) throw new BadRequest();
 
         let attachmentId: string | null = null;
         if (type === "picture") {
             if (!picture) throw new NotFound();
             attachmentId = picture;
-            await fileService.del(picture, bucketId, role);
+            await fileService.del(picture, bucket_id, role);
         } else {
             if (!(type in parsedDocument) || !parsedDocument[type]) {
                 throw new NotFound();
             }
             attachmentId = parsedDocument[type];
-            await fileService.del(parsedDocument[type], bucketId, role);
+            await fileService.del(parsedDocument[type], bucket_id, role);
             parsedDocument[type] = null;
         }
 

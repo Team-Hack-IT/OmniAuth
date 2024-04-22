@@ -21,7 +21,7 @@ const contract = tronWeb.contract(ContractABI.abi, contractAddress!);
  * @returns {Promise<object>} A promise that resolves to the result of the registration.
  * @throws {ServerError} If an error occurs during the registration process.
  */
-export function registerUser() {
+export function registerUser(): Promise<object> {
     return contract
         .registerUser()
         .send({
@@ -104,6 +104,18 @@ export function getData() {
         .getData()
         .call()
         .then((result: string) => {
+            return result;
+        })
+        .catch(() => {
+            throw new ServerError();
+        });
+}
+
+export function generateUniqueId() {
+    return contract
+        .generateUniqueId()
+        .call()
+        .then((result: number) => {
             return result;
         })
         .catch(() => {
