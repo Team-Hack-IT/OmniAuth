@@ -56,22 +56,16 @@ const createBucket = async (userId: string, table: string) => {
 };
 
 /**
- * Saves the attachment ID for a user in a specified table and column.
+ * Saves the file ID for a user in a specified table and column.
  * @param userId - The ID of the user.
- * @param attachmentId - The ID of the attachment to save. Can be null.
  * @param table - The name of the table where the user data is stored.
- * @param columnName - The name of the column where the attachment ID should be saved.
+ * @param column - The column where the attachment ID should be saved.
  * @returns True if the attachment ID is saved successfully, false otherwise.
  */
-const saveAttachmentId = async (
-    userId: string,
-    attachmentId: string | null,
-    table: string,
-    columnName: string
-) => {
+const saveFileId = async (userId: string, table: string, column: object) => {
     const { error } = await supabase
         .from(table)
-        .update({ [columnName]: attachmentId })
+        .update(column)
         .eq("id", userId);
 
     if (error) return false;
@@ -95,10 +89,12 @@ const download = async (
     table: string
 ) => {
     const { data, error } = await supabase.storage
-        .from(`public/${table}/${bucketId}`)
+        .from(bucketId)
         .download(attachmentId);
 
     if (error) {
+        console.error(error);
+
         if (error.message === "Not found") throw new NotFound("File not found");
         throw new ServerError();
     }
@@ -183,7 +179,7 @@ const update = async (
 export {
     createBucket,
     deleteBucket,
-    saveAttachmentId,
+    saveFileId,
     download,
     upload,
     del,

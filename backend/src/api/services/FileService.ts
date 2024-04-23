@@ -3,7 +3,7 @@ import AllowedFileTypes, * as fileService from "../../utils/file";
 import uploadFile from "../middleware/MulterMiddleware";
 import { Response, Request, NextFunction } from "express";
 import { compareImages, matchId } from "../../utils/image";
-import { BadRequest, NotFound, ServerError } from "../../utils/error";
+import { BadRequest, Conflict, NotFound, ServerError } from "../../utils/error";
 import { User } from "../../@types/model.types";
 
 const verifyId = async (req: Request, res: Response, next: NextFunction) => {
@@ -66,16 +66,14 @@ const uploadPicture = async (
         await uploadFile(
             req,
             res,
+            next,
             async (attachmentId: string, contentType: string) => {
                 if (!AllowedFileTypes["picture"].includes(contentType))
                     throw new BadRequest();
 
-                await fileService.saveAttachmentId(
-                    id,
-                    attachmentId,
-                    role,
-                    "picture"
-                );
+                await fileService.saveFileId(id, role, {
+                    picture: attachmentId,
+                });
             }
         );
     } catch (error) {
@@ -83,7 +81,7 @@ const uploadPicture = async (
     }
 };
 
-const uploadAttachment = async (
+const uploadDocument = async (
     req: Request,
     res: Response,
     next: NextFunction
@@ -95,15 +93,13 @@ const uploadAttachment = async (
         const { type } = req.params;
 
         if (type === "picture") throw new BadRequest();
+        if (parsedDocument[type]) throw new Conflict("File already exists");
 
-        await uploadFile(req, res, async (attachmentId: string) => {
+        await uploadFile(req, res, next, async (attachmentId: string) => {
             parsedDocument[type] = attachmentId;
-            await fileService.saveAttachmentId(
-                id,
-                attachmentId,
-                role,
-                parsedDocument[type]
-            );
+            await fileService.saveFileId(id, role, {
+                document: JSON.stringify(parsedDocument),
+            });
         });
     } catch (error) {
         next(error);
@@ -124,11 +120,14 @@ const downloadFile = async (
         if (!type || !bucket_id) throw new BadRequest();
 
         const fileId = type === "picture" ? picture : parsedDocument[type];
+        console.log(fileId);
         if (!fileId) throw new NotFound();
 
         const file = await fileService.download(fileId, bucket_id, role);
-        if (!file) throw new NotFound("File doesn't exist");
+        if (!file) throw new NotFound("File not found");
 
+        res.setHeader("Content-Type", fileId.split(".")[1]);
+        res.setHeader("Content-disposition", `attachment; filename=${fileId}`);
         res.status(200).send(file);
     } catch (error) {
         next(error);
@@ -158,7 +157,9 @@ const deleteFile = async (req: Request, res: Response, next: NextFunction) => {
             parsedDocument[type] = null;
         }
 
-        await fileService.saveAttachmentId(id, attachmentId, role, type);
+        await fileService.saveFileId(id, role, {
+            document: JSON.stringify(parsedDocument),
+        });
 
         res.status(200).json({ message: "File deleted successfully" });
     } catch (error) {
@@ -166,4 +167,4 @@ const deleteFile = async (req: Request, res: Response, next: NextFunction) => {
     }
 };
 
-export { verifyId, uploadPicture, uploadAttachment, downloadFile, deleteFile };
+export { verifyId, uploadPicture, uploadDocument, downloadFile, deleteFile };

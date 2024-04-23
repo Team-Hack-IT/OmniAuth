@@ -24,6 +24,7 @@ export default async function errorMiddleware(
             break;
         case "Conflict":
             res.status(409).json({ error: err.message });
+            break;
         default:
             logger.error(`${err.message}`);
             res.status(500).json({ error: "Internal Server Error" });

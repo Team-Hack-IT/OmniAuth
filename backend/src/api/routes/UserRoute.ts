@@ -21,7 +21,7 @@ router.get("/api/user/logout-all", BaseController.logoutAll);
 router.get("/api/user/logout", BaseController.logout);
 router.get("/api/user/service/get-all-business", UserController.getAllBusiness);
 router.get("/api/user/files/download/:type", fileService.downloadFile);
-router.post("/api/user/files/upload/:type", fileService.uploadAttachment);
+router.post("/api/user/files/upload/:type", fileService.uploadDocument);
 router.post("/api/user/files/upload-picture", fileService.uploadPicture);
 router.delete("/api/user/files/delete/:type", fileService.deleteFile);
 

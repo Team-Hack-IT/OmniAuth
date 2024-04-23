@@ -13,6 +13,7 @@ export default async function userMiddleware(
 
         if (data.role !== "user") throw new Forbidden();
 
+        if (data.document) data.document = JSON.parse(data.document.toString());
         req.user = data;
         next();
     } catch (error) {

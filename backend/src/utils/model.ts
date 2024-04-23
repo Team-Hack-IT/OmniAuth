@@ -24,18 +24,18 @@ export async function loadData(
     return data[0];
 }
 
+/**
+ * Inserts a new record into the specified table.
+ * @param table - The name of the table to insert the record into.
+ * @param subject - The subject of the record.
+ * @param obj - An object containing additional properties for the record.
+ * @returns The result of the insert operation.
+ */
 export async function create(subject: string, table: string, obj: object) {
     const data = await loadData(subject, table);
 
     if (data) throw new Conflict("User already exists");
 
-    /**
-     * Inserts a new record into the specified table.
-     * @param table - The name of the table to insert the record into.
-     * @param subject - The subject of the record.
-     * @param obj - An object containing additional properties for the record.
-     * @returns The result of the insert operation.
-     */
     const { error } = await supabase.from(table).insert([
         {
             subject: subject,

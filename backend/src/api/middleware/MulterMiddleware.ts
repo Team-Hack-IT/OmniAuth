@@ -1,8 +1,9 @@
-import multer from "multer";
+import multer, { MulterError } from "multer";
 import NodeClam from "clamscan";
 import AllowedFileTypes, * as fileService from "../../utils/file";
 import { Request, Response } from "express";
-import { Conflict } from "../../utils/error";
+import { NextFunction } from "express-serve-static-core";
+import { BadRequest, ServerError } from "../../utils/error";
 
 const upload = multer({
     limits: {
@@ -41,60 +42,48 @@ const scanFIle = async (path: string): Promise<Boolean> => {
 export default async function uploadFile(
     req: Request,
     res: Response,
+    next: NextFunction,
     cb: (attachmentId: string, contentType: string) => Promise<void>
 ) {
-    try {
-        upload.single("file")(req, res, async (err) => {
-            if (err) {
-                if (err instanceof multer.MulterError) {
-                    return res.status(400).json({ error: err.message });
-                }
-                return res.status(500).json({ error: "Internal Server Error" });
-            }
+    const { type } = req.params;
 
-            if (!req.file) {
-                return res.status(400).json({ error: "No file uploaded" });
-            }
-            if (await scanFIle(req.file.path)) {
-                return res.status(400).json({ error: "File is infected" });
-            }
-
-            const { user } = req;
-            const { type } = req.params;
-            let { role, bucket_id } = user;
-            const contentType = req.file.mimetype;
-            const file = req.file.buffer;
-
-            if (
-                type &&
-                (!(type in AllowedFileTypes) ||
-                    !AllowedFileTypes[
-                        type as keyof typeof AllowedFileTypes
-                    ].includes(contentType))
-            ) {
-                return res.status(400).json({ error: "Invalid file type" });
-            }
-
-            if (!bucket_id) {
-                bucket_id = await fileService.createBucket(user.id, user.role);
-                if (!bucket_id)
-                    return res
-                        .status(500)
-                        .json({ error: "Internal Server Error" });
-            }
-            await fileService
-                .upload(file, bucket_id, contentType)
-                .then(async (attachmentId) => {
-                    await cb(attachmentId, contentType);
-                    res.status(200).json({
-                        message: "File uploaded successfully",
-                    });
-                })
-                .catch((err) => {
-                    res.status(err.statusCode).json({ error: err.message });
-                });
-        });
-    } catch (error) {
-        res.status(500).json({ error: "Internal Server Error" });
+    if (!type || !(type in AllowedFileTypes)) {
+        return next(new BadRequest());
     }
+
+    upload.single("file")(req, res, async (err) => {
+        if (err instanceof MulterError) {
+            return next(new BadRequest(err.message));
+        }
+        if (!req.file) {
+            return next(new BadRequest("No file uploaded"));
+        }
+        if (await scanFIle(req.file.path)) {
+            return next(new BadRequest("Infected file"));
+        }
+        const { user } = req;
+        let { bucket_id } = user;
+        const contentType = req.file.mimetype;
+        const file = req.file.buffer;
+        if (
+            !AllowedFileTypes[type as keyof typeof AllowedFileTypes].includes(
+                contentType
+            )
+        ) {
+            return next(new BadRequest());
+        }
+        if (!bucket_id) {
+            bucket_id = await fileService.createBucket(user.id, user.role);
+            if (!bucket_id) {
+                return next(new ServerError());
+            }
+        }
+        const attachmentId = await fileService.upload(
+            file,
+            bucket_id,
+            contentType
+        );
+        await cb(attachmentId, contentType);
+        return res.status(200).json({ message: "File uploaded" });
+    });
 }
