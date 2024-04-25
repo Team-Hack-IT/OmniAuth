@@ -20,18 +20,14 @@ const verifyId = async (req: Request, res: Response, next: NextFunction) => {
         if (!parsedDocument.idCard) throw new NotFound();
 
         const [idCard, photo] = await Promise.all([
-            fileService.download(parsedDocument.idCard, bucket_id, role),
-            fileService.download(picture, bucket_id, role),
+            fileService.download(parsedDocument.idCard, bucket_id),
+            fileService.download(picture, bucket_id),
         ]);
 
         if (!idCard || !photo) throw new NotFound();
 
-        const idCardBuffer = Buffer.from(await idCard.arrayBuffer());
-        await compareImages(
-            idCardBuffer,
-            Buffer.from(await photo.arrayBuffer())
-        );
-        await matchId(user, idCardBuffer);
+        await compareImages(idCard, photo);
+        await matchId(user, idCard);
         res.status(200).json({ verified: true });
     } catch (error) {
         if (user.is_verified) {
@@ -119,14 +115,12 @@ const downloadFile = async (
 
         if (!type || !bucket_id) throw new BadRequest();
 
-        const fileId = type === "picture" ? picture : parsedDocument[type];
-        console.log(fileId);
+        const fileId = parsedDocument[type];
         if (!fileId) throw new NotFound();
 
-        const file = await fileService.download(fileId, bucket_id, role);
-        if (!file) throw new NotFound("File not found");
+        const file = await fileService.download(fileId, bucket_id);
 
-        res.setHeader("Content-Type", fileId.split(".")[1]);
+        res.type(fileId.split(".")[1]);
         res.setHeader("Content-disposition", `attachment; filename=${fileId}`);
         res.status(200).send(file);
     } catch (error) {
@@ -142,23 +136,15 @@ const deleteFile = async (req: Request, res: Response, next: NextFunction) => {
         const parsedDocument = document ? JSON.parse(document.toString()) : {};
 
         if (!type || !bucket_id) throw new BadRequest();
-
-        let attachmentId: string | null = null;
-        if (type === "picture") {
-            if (!picture) throw new NotFound();
-            attachmentId = picture;
-            await fileService.del(picture, bucket_id, role);
-        } else {
-            if (!(type in parsedDocument) || !parsedDocument[type]) {
-                throw new NotFound();
-            }
-            attachmentId = parsedDocument[type];
-            await fileService.del(parsedDocument[type], bucket_id, role);
-            parsedDocument[type] = null;
+        if (!(type in parsedDocument) || !parsedDocument[type]) {
+            throw new NotFound();
         }
 
-        await fileService.saveFileId(id, role, {
-            document: JSON.stringify(parsedDocument),
+        parsedDocument[type] = null;
+        await fileService.del(parsedDocument[type], bucket_id, {
+            userId: id,
+            table: "user",
+            property: { document: JSON.stringify(parsedDocument) },
         });
 
         res.status(200).json({ message: "File deleted successfully" });

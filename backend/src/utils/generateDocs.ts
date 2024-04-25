@@ -5,8 +5,9 @@ export default function generateDocs() {
     try {
         const dirpath = "./src/docs";
 
-        if (fs.existsSync(`${dirpath}/Combined.yaml`))
+        if (fs.existsSync(`${dirpath}/Combined.yaml`)) {
             fs.unlinkSync(`${dirpath}/Combined.yaml`);
+        }
 
         fs.copyFileSync(`${dirpath}/User.yaml`, `${dirpath}/Combined.yaml`);
         fs.appendFileSync(

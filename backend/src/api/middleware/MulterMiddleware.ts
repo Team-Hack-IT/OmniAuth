@@ -1,4 +1,4 @@
-import multer, { MulterError } from "multer";
+import multer from "multer";
 import NodeClam from "clamscan";
 import AllowedFileTypes, * as fileService from "../../utils/file";
 import { Request, Response } from "express";
@@ -52,7 +52,7 @@ export default async function uploadFile(
     }
 
     upload.single("file")(req, res, async (err) => {
-        if (err instanceof MulterError) {
+        if (err instanceof multer.MulterError) {
             return next(new BadRequest(err.message));
         }
         if (!req.file) {
@@ -61,10 +61,12 @@ export default async function uploadFile(
         if (await scanFIle(req.file.path)) {
             return next(new BadRequest("Infected file"));
         }
+
         const { user } = req;
-        let { bucket_id } = user;
+        let { id, role, bucket_id } = user;
         const contentType = req.file.mimetype;
         const file = req.file.buffer;
+
         if (
             !AllowedFileTypes[type as keyof typeof AllowedFileTypes].includes(
                 contentType
@@ -73,17 +75,14 @@ export default async function uploadFile(
             return next(new BadRequest());
         }
         if (!bucket_id) {
-            bucket_id = await fileService.createBucket(user.id, user.role);
-            if (!bucket_id) {
-                return next(new ServerError());
-            }
+            bucket_id = await fileService.createBucket(id, role);
+            if (!bucket_id) return next(new ServerError());
         }
-        const attachmentId = await fileService.upload(
-            file,
-            bucket_id,
-            contentType
-        );
-        await cb(attachmentId, contentType);
+        await fileService
+            .upload(file, bucket_id, contentType)
+            .then(async (attachmentId) => {
+                await cb(attachmentId, contentType);
+            });
         return res.status(200).json({ message: "File uploaded" });
     });
 }

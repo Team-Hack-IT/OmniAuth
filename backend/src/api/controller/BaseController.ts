@@ -12,6 +12,17 @@ import { deleteBucket } from "../../utils/file";
 
 const profile = async (req: Request, res: Response) => {
     const { password, subject, bucket_id, ...user } = req.user;
+
+    Object.entries(user).forEach(([key, value]) => {
+        const jsonObjs = ["document", "history", "scope"];
+
+        if (jsonObjs.includes(key)) {
+            if (value) {
+                user[key as keyof typeof user] = JSON.parse(value.toString());
+            }
+        }
+    });
+
     res.status(200).json(user);
 };
 
