@@ -128,11 +128,15 @@ const downloadFile = async (
     }
 };
 
-const deleteFile = async (req: Request, res: Response, next: NextFunction) => {
+const deleteDocument = async (
+    req: Request,
+    res: Response,
+    next: NextFunction
+) => {
     try {
         const { type } = req.params;
         const { user } = req;
-        const { id, document, picture, role, bucket_id } = user as User;
+        const { id, document, bucket_id, role } = user as User;
         const parsedDocument = document ? JSON.parse(document.toString()) : {};
 
         if (!type || !bucket_id) throw new BadRequest();
@@ -143,7 +147,7 @@ const deleteFile = async (req: Request, res: Response, next: NextFunction) => {
         parsedDocument[type] = null;
         await fileService.del(parsedDocument[type], bucket_id, {
             userId: id,
-            table: "user",
+            table: role,
             property: { document: JSON.stringify(parsedDocument) },
         });
 
@@ -153,4 +157,33 @@ const deleteFile = async (req: Request, res: Response, next: NextFunction) => {
     }
 };
 
-export { verifyId, uploadPicture, uploadDocument, downloadFile, deleteFile };
+const deletePicture = async (
+    req: Request,
+    res: Response,
+    next: NextFunction
+) => {
+    try {
+        const { user } = req;
+        const { id, picture, bucket_id } = user as User;
+
+        if (!picture || !bucket_id) throw new BadRequest();
+
+        await fileService.del(picture, bucket_id, {
+            userId: id,
+            table: "user",
+            property: { picture: null },
+        });
+
+        res.status(200).json({ message: "File deleted successfully" });
+    } catch (error) {
+        next(error);
+    }
+};
+export {
+    verifyId,
+    uploadPicture,
+    uploadDocument,
+    downloadFile,
+    deleteDocument,
+    deletePicture,
+};

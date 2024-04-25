@@ -23,6 +23,6 @@ router.get("/api/user/service/get-all-business", UserController.getAllBusiness);
 router.get("/api/user/files/download/:type", fileService.downloadFile);
 router.post("/api/user/files/upload/:type", fileService.uploadDocument);
 router.post("/api/user/files/upload-picture", fileService.uploadPicture);
-router.delete("/api/user/files/delete/:type", fileService.deleteFile);
+router.delete("/api/user/files/delete/:type", fileService.deleteDocument);
 
 export default router;
