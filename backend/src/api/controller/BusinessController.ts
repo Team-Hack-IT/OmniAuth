@@ -15,7 +15,7 @@ const createBusiness = async (
             "address",
             "city",
             "state",
-            "postalCode",
+            "postal_code",
             "website",
             "description",
             "industry",
@@ -54,7 +54,7 @@ const updateBusiness = async (
             "city",
             "state",
             "address",
-            "postalCode",
+            "postal_code",
             "industry",
         ];
 

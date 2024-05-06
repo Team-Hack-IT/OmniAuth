@@ -4,26 +4,26 @@ import { describe, it, expect } from "@jest/globals";
 
 const user: User = {
     address: "123 Main St",
-    birthDate: null,
-    bucketId: null,
+    birth_date: null,
+    bucket_id: null,
     city: null,
     country: "USA",
-    createdAt: null,
+    created_at: null,
     document: null,
     email: "",
     firstname: "John",
     history: null,
     id: "",
-    isVerified: null,
+    is_verified: null,
     lastname: "Doe",
     password: null,
     phone: null,
     picture: null,
-    postalCode: null,
+    postal_code: null,
     role: "",
     state: null,
     subject: "",
-    updatedAt: "",
+    updated_at: "",
 };
 
 describe("compareImages", () => {

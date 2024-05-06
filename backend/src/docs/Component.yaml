@@ -1,0 +1,191 @@
+components:
+    schemas:
+        User:
+            type: object
+            properties:
+                address:
+                    type:
+                        - string
+                        - null
+                birth_date:
+                    type:
+                        - string
+                        - null
+                city:
+                    type:
+                        - string
+                        - null
+                country:
+                    type: string
+                created_at:
+                    type: string
+                document:
+                    type:
+                        - object
+                        - null
+                email:
+                    type: string
+                firstname:
+                    type: string
+                history:
+                    type:
+                        - object
+                        - null
+                id:
+                    type: string
+                isVerified:
+                    type: boolean
+                    default: false
+                lastname:
+                    type: string
+                phone:
+                    type:
+                        - string
+                        - null
+                picture:
+                    type:
+                        - string
+                        - null
+                postal_code:
+                    type:
+                        - string
+                        - null
+                role: "user"
+                state:
+                    type:
+                        - string
+                        - null
+                updatedAt:
+                    type: string
+
+        Business:
+            type: object
+            properties:
+                id:
+                    type: string
+                name:
+                    type: string
+                description:
+                    type: string
+                address:
+                    type: string
+                industry:
+                    type: string
+                website:
+                    type: string
+                scope:
+                    type: object
+
+        UserSignUp:
+            type: object
+            properties:
+                email:
+                    type: string
+                firstname:
+                    type: string
+                lastname:
+                    type: string
+                country:
+                    type: string
+                address:
+                    type: string
+                state:
+                    type: string
+                birth_date:
+                    type: string
+                    format: date
+                postal_code:
+                    type: string
+
+        FileType:
+            type: string
+            enum:
+                - picture
+                - idCard
+                - driverLicense
+                - passport
+
+        UpdateUserRequest:
+            type: object
+            properties:
+                firstname:
+                    type: string
+                lastname:
+                    type: string
+                email:
+                    type: string
+                country:
+                    type: string
+                address:
+                    type: string
+                state:
+                    type: string
+                birth_date:
+                    type: string
+                    format: date
+                postal_code:
+                    type: string
+        BusinessSignupRequest:
+            type: object
+            properties:
+                name:
+                    type: string
+                email:
+                    type: string
+                country:
+                    type: string
+                address:
+                    type: string
+                city:
+                    type: string
+                state:
+                    type: string
+                postalCode:
+                    type: string
+                website:
+                    type: string
+                description:
+                    type: string
+                tier:
+                    type: string
+                industry:
+                    type: string
+        BusinessSignupResponse:
+            type: object
+            properties: // Add properties and their types here
+        BusinessProfileResponse:
+            type: object
+            properties: // Add properties and their types here
+        UpdatePasswordRequest:
+            type: object
+            properties: // Add properties and their types here
+        UpdatePasswordResponse:
+            type: object
+            properties: // Add properties and their types here
+        VerifyPasswordRequest:
+            type: object
+            properties: // Add properties and their types here
+        VerifyPasswordResponse:
+            type: object
+            properties: // Add properties and their types here
+        UpdateEmailRequest:
+            type: object
+            properties: // Add properties and their types here
+        UpdateEmailResponse:
+            type: object
+            properties: // Add properties and their types here
+        DeleteBusinessResponse:
+            type: object
+            properties: // Add properties and their types here
+        UpdateBusinessRequest:
+            type: object
+            properties: // Add properties and their types here
+        UpdateBusinessResponse:
+            type: object
+            properties: // Add properties and their types here
+        LogoutResponse:
+            type: object
+            properties: // Add properties and their types here
+        LogoutAllResponse:
+            type: object
+            properties: // Add properties and their types here

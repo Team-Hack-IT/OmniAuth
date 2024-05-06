@@ -1,6 +1,6 @@
 import supabase from "../config/db.config";
 import { v4 as uuidv4 } from "uuid";
-import { Conflict, NotFound, ServerError } from "./error";
+import { BadRequest, Conflict, NotFound, ServerError } from "./error";
 
 const AllowedFileTypes = {
     idCard: ["image/png", "image/jpg", "image/jpeg", "application/pdf"],
@@ -15,7 +15,7 @@ const AllowedFileTypes = {
  * @param {string} bucketId - The ID of the bucket to delete.
  * @throws {ServerError} If there is an error while deleting the bucket.
  */
-const deleteBucket = async (bucketId: string) => {
+export async function deleteBucket(bucketId: string) {
     const { error } = await supabase.storage.emptyBucket(bucketId);
 
     if (error) throw new ServerError();
@@ -24,136 +24,131 @@ const deleteBucket = async (bucketId: string) => {
         await supabase.storage.deleteBucket(bucketId);
 
     if (StorageError) throw new ServerError();
-};
+}
 
 /**
  * Creates a new bucket for storing files in Supabase storage.
  * @param userId - The ID of the user.
  * @param table - The name of the table to update.
- * @returns The ID of the created bucket.
- * @throws {ServerError} If there is an error creating the bucket or updating the table.
+ * @returns The ID of the created bucket or null if an error occurs.
  */
-const createBucket = async (userId: string, table: string) => {
+export async function createBucket(userId: string, table: string) {
     const bucketId = uuidv4();
     const { error: StorageError } = await supabase.storage.createBucket(
         bucketId,
         {
             public: true,
-            fileSizeLimit: 100000000,
-            allowedMimeTypes: [
-                "application/pdf",
-                "image/png",
-                "image/jpeg",
-                "image/jpg",
-                "image/webp",
-                "video/mp4",
-            ],
+            fileSizeLimit: 1024 * 1024,
+            allowedMimeTypes: ["application/pdf", "image/*", "video/mp4"],
         }
     );
 
-    if (StorageError) throw new ServerError();
+    if (StorageError) return null;
 
     const { error } = await supabase
         .from(table)
-        .update({ bucketId })
+        .update({ bucket_id: bucketId })
         .eq("id", userId);
 
-    if (error) throw new ServerError();
+    if (error) return null;
 
     return bucketId;
-};
+}
 
 /**
- * Saves the attachment ID for a user in a specified table and column.
+ * Saves the file ID for a user in a specified table and column.
  * @param userId - The ID of the user.
- * @param attachmentId - The ID of the attachment to save. Can be null.
  * @param table - The name of the table where the user data is stored.
- * @param columnName - The name of the column where the attachment ID should be saved.
- * @throws {ServerError} If there is an error while updating the table.
+ * @param column - The column where the attachment ID should be saved.
+ * @returns True if the attachment ID is saved successfully, false otherwise.
  */
-const saveAttachmentId = async (
+export async function saveFileId(
     userId: string,
-    attachmentId: string | null,
     table: string,
-    columnName: string
-) => {
+    column: object
+) {
     const { error } = await supabase
         .from(table)
-        .update({ [columnName]: attachmentId })
+        .update(column)
         .eq("id", userId);
 
-    if (error) throw new ServerError();
-};
+    if (error) return false;
+
+    return true;
+}
 
 /**
  * Downloads a file from Supabase storage.
  *
  * @param attachmentId - The ID of the attachment to download.
  * @param bucketId - The ID of the bucket where the attachment is stored.
- * @param table - The name of the table where the attachment is associated.
  * @returns The downloaded file data.
  * @throws {NotFound} If the file is not found.
  * @throws {ServerError} If there is an error during the download process.
+ * @returns A Promise that resolves to the downloaded file as a Buffer.
  */
-const download = async (
+export async function download(
     attachmentId: string,
-    bucketId: string,
-    table: string
-) => {
-    const { data, error } = await supabase.storage
-        .from(`public/${table}/${bucketId}`)
-        .download(attachmentId);
+    bucketId: string
+): Promise<Buffer> {
+    const url = supabase.storage.from(bucketId).getPublicUrl(attachmentId);
 
-    if (error) {
-        if (error.message === "Not found") throw new NotFound("File not found");
-        throw new ServerError();
-    }
-
-    return data;
-};
+    return await fetch(url.data.publicUrl)
+        .then((res) => res.blob())
+        .then(async (blob) => {
+            try {
+                const buf = await blob.arrayBuffer();
+                return Buffer.from(buf);
+            } catch {
+                throw new ServerError();
+            }
+        })
+        .catch((error) => {
+            if (error.message === "Object not found")
+                throw new NotFound("File not found");
+            throw new ServerError();
+        });
+}
 
 /**
- * Uploads a file to the specified bucket and table.
+ * Uploads a file to the specified bucket.
+ *
  * @param file - The file to be uploaded as a Buffer.
  * @param bucketId - The ID of the bucket where the file will be uploaded.
- * @param table - The table where the file will be stored.
  * @param contentType - The content type of the file.
- * @returns The attachment ID of the uploaded file.
- * @throws {NotFound} If the file is not found.
- * @throws {Conflict} If the file already exists.
+ * @returns A Promise that resolves to the attachment ID of the uploaded file.
+ * @throws {Conflict} If the file already exists in the bucket.
  * @throws {ServerError} If an error occurs during the upload process.
  */
-const upload = async (
+export async function upload(
     file: Buffer,
     bucketId: string,
-    table: string,
     contentType: string
-) => {
-    const attachmentId = `${uuidv4()}}.${contentType.split("/")[1]}`;
+): Promise<string> {
+    const attachmentId = `${uuidv4()}.${contentType.split("/")[1]}`;
     const { error } = await supabase.storage
         .from(bucketId)
-        .upload(`public/${table}/${attachmentId}`, file, { contentType });
+        .upload(attachmentId, file, { contentType });
 
     if (error) {
-        if (error.message === "Not found") throw new NotFound("File not found");
-        if (error.message === "File exits") throw new Conflict("File exits");
-        throw new ServerError();
+        if (error.message === "File exits")
+            return Promise.reject(new Conflict("File already exists"));
+        return Promise.reject(new ServerError());
     }
 
-    return attachmentId;
-};
+    return Promise.resolve(attachmentId);
+}
 
 /**
- * Deletes a file from the specified bucket and table.
+ * Deletes a file from the specified bucket.
  * @param attachmentId - The ID of the file to delete.
  * @param bucketId - The ID of the bucket where the file is stored.
- * @param table - The name of the table where the file is stored.
  * @throws {NotFound} If the file is not found.
  * @throws {ServerError} If an error occurs while deleting the file.
  */
-const del = async (attachmentId: string, bucketId: string, table: string) => {
+const deleteAttachmentId = async (attachmentId: string, bucketId: string) => {
     const { error } = await supabase.storage
-        .from(`public/${table}/${bucketId}`)
+        .from(bucketId)
         .remove([attachmentId]);
 
     if (error) {
@@ -162,6 +157,28 @@ const del = async (attachmentId: string, bucketId: string, table: string) => {
     }
 };
 
+export async function del(
+    attachmentId: string,
+    bucketId: string,
+    options: {
+        userId: string;
+        table: string;
+        property: object;
+    }
+) {
+    try {
+        if (!bucketId) throw new BadRequest();
+
+        await deleteAttachmentId(attachmentId, bucketId);
+        await saveFileId(options.userId, options.table, options.property).then(
+            (result) => {
+                if (!result) throw new ServerError();
+            }
+        );
+    } catch (error) {
+        throw error;
+    }
+}
 /**
  * Updates a file in the specified Supabase storage bucket.
  *
@@ -172,12 +189,12 @@ const del = async (attachmentId: string, bucketId: string, table: string) => {
  * @throws {NotFound} If the file is not found.
  * @throws {ServerError} If an error occurs during the update.
  */
-const update = async (
+export async function update(
     file: Buffer,
     attachmentId: string,
     bucketId: string,
     table: string
-) => {
+) {
     const { error } = await supabase.storage
         .from(bucketId)
         .update(`public/${table}/${attachmentId}`, file);
@@ -186,15 +203,6 @@ const update = async (
         if (error.message === "Not found") throw new NotFound("File not found");
         throw new ServerError();
     }
-};
+}
 
-export {
-    createBucket,
-    deleteBucket,
-    saveAttachmentId,
-    download,
-    upload,
-    del,
-    update,
-    AllowedFileTypes as default,
-};
+export default AllowedFileTypes;

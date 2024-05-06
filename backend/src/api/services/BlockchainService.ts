@@ -1,16 +1,12 @@
 import ContractABI from "../../../../smartContract/artifacts...MyContract.json";
-import TronWeb from "tronweb";
+import { TronWeb } from "tronweb";
 import dotenv from "dotenv";
 import { ServerError } from "../../utils/error";
-import "@daochild/tronweb-typescript";
 
 dotenv.config();
 
 const tronWeb = new TronWeb({
-    fullNode: process.env.CONTRACT_URL,
-    privateKey: process.env.PRIVATE_KEY,
-    eventServer: process.env.EVENT_SERVER,
-    solidityNode: process.env.SOLIDITY_NODE,
+    fullHost: process.env.CONTRACT_URL,
 });
 
 const contractAddress = process.env.CONTRACT_ADDRESS;
@@ -21,8 +17,8 @@ const contract = tronWeb.contract(ContractABI.abi, contractAddress!);
  * @returns {Promise<object>} A promise that resolves to the result of the registration.
  * @throws {ServerError} If an error occurs during the registration process.
  */
-export function registerUser() {
-    return contract
+export function registerUser(): Promise<object> {
+    return contract.eventListener
         .registerUser()
         .send({
             feeLimit: 1_000_000,
@@ -45,7 +41,7 @@ export function registerUser() {
  * @throws {ServerError} If an error occurs during the approval process.
  */
 export function approveUser(userId: number): Promise<boolean> {
-    return contract
+    return contract.eventListener
         .approveUser(userId)
         .send({
             feeLimit: 1_000_000,
@@ -65,16 +61,10 @@ export function approveUser(userId: number): Promise<boolean> {
  * @param data - The data to be set in the contract.
  */
 export function setData(data: string) {
-    contract
-        .setData(data)
-        .send({
-            feeLimit: 1_000_000,
-            callValue: 0,
-            shouldPollResponse: true,
-        })
-        .catch(() => {
-            throw new ServerError();
-        });
+    contract.methods.setData(data).send({
+        feeLimit: 1_000_000,
+        callValue: 0,
+    });
 }
 
 /**
@@ -83,7 +73,7 @@ export function setData(data: string) {
  * @throws {ServerError} If there is an error retrieving the owner.
  */
 export function getOwner() {
-    return contract
+    return contract.methods
         .getOwner()
         .call()
         .then((result: string) => {
@@ -100,10 +90,22 @@ export function getOwner() {
  * @throws {ServerError} If there is an error retrieving the data.
  */
 export function getData() {
-    return contract
+    return contract.methods
         .getData()
         .call()
         .then((result: string) => {
+            return result;
+        })
+        .catch(() => {
+            throw new ServerError();
+        });
+}
+
+export function generateUniqueId() {
+    return contract.methods
+        .generateUniqueId()
+        .call()
+        .then((result: number) => {
             return result;
         })
         .catch(() => {

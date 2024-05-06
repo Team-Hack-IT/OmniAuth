@@ -1,14 +1,18 @@
 import express, { Request, Response } from "express";
 import cookieParser from "cookie-parser";
 import cors from "cors";
+import dotenv from "dotenv";
 import helmet from "helmet";
 import swaggerUi from "swagger-ui-express";
-import yaml from "yamljs";
 import sessionMiddleware from "./api/middleware/SessionMiddleware";
 import errorMiddleware from "./api/middleware/ErrorMiddleware";
 import rateLimiter from "./api/middleware/RateLimiter";
 import BusinessRoute from "./api/routes/BusinessRoute";
 import UserRoute from "./api/routes/UserRoute";
+import generateDocs from "./utils/generateDocs";
+import morganMiddleware from "./api/middleware/MorganMiddleware";
+
+dotenv.config();
 
 const app = express();
 const port = process.env.PORT || 3000;
@@ -39,14 +43,11 @@ if (environment === "development") {
     app.use(cors(corsOptions));
 } else {
     app.use(cors());
+    app.use(morganMiddleware);
 }
 
 app.use(rateLimiter);
-app.use(
-    "/api-docs",
-    swaggerUi.serve,
-    swaggerUi.setup(yaml.load("./src/docs/User.yaml"))
-);
+app.use("/api-docs", swaggerUi.serve, swaggerUi.setup(generateDocs()));
 app.use(sessionMiddleware);
 app.use(UserRoute);
 app.use(BusinessRoute);

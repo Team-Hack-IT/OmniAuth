@@ -12,8 +12,8 @@ const requiredAttributes = [
     "city",
     "state",
     "country",
-    "birthDate",
-    "postalCode",
+    "birth_date",
+    "postal_code",
 ];
 
 const createUser = async (req: Request, res: Response, next: NextFunction) => {

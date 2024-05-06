@@ -1,12 +1,10 @@
-openapi: 3.0.0
-info:
-    title: Business API
-    version: 1.0.0
 paths:
     /business/signup:
         post:
             summary: Create a new business
             description: Endpoint to create a new business.
+            tags:
+                - Business
             requestBody:
                 required: true
                 content:
@@ -24,6 +22,8 @@ paths:
         get:
             summary: Get business profile
             description: Endpoint to get the profile of a business.
+            tags:
+                - Business
             responses:
                 "200":
                     description: Successful operation
@@ -35,6 +35,8 @@ paths:
         post:
             summary: Update business password
             description: Endpoint to update the password of a business.
+            tags:
+                - Business
             requestBody:
                 required: true
                 content:
@@ -52,6 +54,8 @@ paths:
         post:
             summary: Verify business password
             description: Endpoint to verify the password of a business.
+            tags:
+                - Business
             requestBody:
                 required: true
                 content:
@@ -69,6 +73,8 @@ paths:
         post:
             summary: Update business email
             description: Endpoint to update the email of a business.
+            tags:
+                - Business
             requestBody:
                 required: true
                 content:
@@ -86,6 +92,8 @@ paths:
         delete:
             summary: Delete business
             description: Endpoint to delete a business.
+            tags:
+                - Business
             responses:
                 "200":
                     description: Successful operation
@@ -97,6 +105,8 @@ paths:
         post:
             summary: Update business
             description: Endpoint to update a business.
+            tags:
+                - Business
             requestBody:
                 required: true
                 content:
@@ -114,6 +124,8 @@ paths:
         get:
             summary: Logout business
             description: Endpoint to logout a business.
+            tags:
+                - Business
             responses:
                 "200":
                     description: Successful operation
@@ -125,6 +137,8 @@ paths:
         get:
             summary: Logout all businesses
             description: Endpoint to logout all businesses.
+            tags:
+                - Business
             responses:
                 "200":
                     description: Successful operation
@@ -132,69 +146,3 @@ paths:
                         application/json:
                             schema:
                                 $ref: "#/components/schemas/LogoutAllResponse"
-components:
-    schemas:
-        BusinessSignupRequest:
-            type: object
-            properties:
-                name:
-                    type: string
-                email:
-                    type: string
-                country:
-                    type: string
-                address:
-                    type: string
-                city:
-                    type: string
-                state:
-                    type: string
-                postalCode:
-                    type: string
-                website:
-                    type: string
-                description:
-                    type: string
-                tier:
-                    type: string
-                industry:
-                    type: string
-        BusinessSignupResponse:
-            type: object
-            properties: // Add properties and their types here
-        BusinessProfileResponse:
-            type: object
-            properties: // Add properties and their types here
-        UpdatePasswordRequest:
-            type: object
-            properties: // Add properties and their types here
-        UpdatePasswordResponse:
-            type: object
-            properties: // Add properties and their types here
-        VerifyPasswordRequest:
-            type: object
-            properties: // Add properties and their types here
-        VerifyPasswordResponse:
-            type: object
-            properties: // Add properties and their types here
-        UpdateEmailRequest:
-            type: object
-            properties: // Add properties and their types here
-        UpdateEmailResponse:
-            type: object
-            properties: // Add properties and their types here
-        DeleteBusinessResponse:
-            type: object
-            properties: // Add properties and their types here
-        UpdateBusinessRequest:
-            type: object
-            properties: // Add properties and their types here
-        UpdateBusinessResponse:
-            type: object
-            properties: // Add properties and their types here
-        LogoutResponse:
-            type: object
-            properties: // Add properties and their types here
-        LogoutAllResponse:
-            type: object
-            properties: // Add properties and their types here
