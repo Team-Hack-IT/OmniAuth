@@ -9,6 +9,7 @@ body, html {
     box-sizing: border-box;
     /* max-width: 1440px; */
     overflow-x: hidden;
+    overflow-y:auto ;
     scroll-behavior: smooth;
 }
 

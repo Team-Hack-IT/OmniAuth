@@ -9,7 +9,7 @@ function About() {
       <div className="max-w-[950px] mx-auto">
         <div className="text-center pt-10 ">
           <a className="font-bold text-2xl text-primary">About Us</a>
-          <p className="text-primary">
+          <p className="text-primary px-2">
             Welcome to OmniAuth, your trusted partner in securing digital
             identities and transactions. Our comprehensive suite of security
             solutions empowers businesses and individuals to protect sensitive
@@ -121,7 +121,7 @@ function About() {
          
           </div>
         </div>
-        <div className="">
+        <div className="pb-4">
           <h3 className="text-center py-10 font-bold text-2xl text-primary">Get Started With OmniAuth</h3>
           <p className="text-center">
             Protect your digital assets and build trust with your users by

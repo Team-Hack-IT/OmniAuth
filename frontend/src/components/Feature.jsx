@@ -6,16 +6,16 @@ import image5 from "../assets/image5.svg";
 
 const Feature = () => {
   return (
-    <section className=" flex flex-col justify-center items-center gap-10">
-      <h2 className="pt-10 text-4xl text-primary font-bold tracking-medium">
+    <section className=" flex flex-col justify-center items-center gap-10 ">
+      <h2 className="pt-10 text-2xl md:text-4xl text-primary font-bold tracking-medium">
         What We Offer
       </h2>
-      <p className="text-tertiary">
+      <p className="text-tertiary px-4">
         We provide comprehensive identity management solution to users
       </p>
-      <div className="flex justify-center items-center gap-60">
+      <div className="flex flex-col gap-10 md:flex-row justify-center items-center md:gap-60">
         <div className="flex flex-col ">
-          <h3 className="text-3xl font-semibold text-primary w-60">
+          <h3 className="text-3xl pb-6 md:pb-0 font-semibold text-primary w-60">
             Secure User Authentication
           </h3>
           <p className="w-[350px]">
@@ -27,21 +27,21 @@ const Feature = () => {
         </div>
       </div>
 
-      <div className="flex justify-center items-center gap-60">
+      <div className="flex flex-col gap-10 md:flex-row justify-center items-center md:gap-60">
         <div className="">
           <img src={image2} width={300} height={300} />{" "}
         </div>
         <div className="flex flex-col">
-          <h3 className="text-3xl font-semibold text-primary w-60">Phone Number Verification</h3>
+          <h3 className="text-3xl pb-6 md:pb-0 font-semibold text-primary w-60">Phone Number Verification</h3>
           <p className="w-[350px]">
             Verifying phone number reduces the risk of fraudulent activities.
           </p>
         </div>
       </div>
 
-      <div className="flex justify-center items-center gap-60">
+      <div className="flex flex-col gap-10 md:flex-row justify-center items-center md:gap-60">
         <div className="flex flex-col">
-          <h3 className="text-3xl font-semibold text-primary w-60">ID Verification</h3>
+          <h3 className="text-3xl pb-6 md:pb-0 font-semibold text-primary w-60">ID Verification</h3>
           <p className="w-[350px]">
             Compares the identity of a person claims to possess with date that
             proves it.
@@ -52,21 +52,21 @@ const Feature = () => {
         </div>
       </div>
 
-      <div className="flex justify-center items-center gap-60">
+      <div className="flex flex-col gap-10 md:flex-row justify-center items-center md:gap-60">
         <div className="">
           <img src={image4} width={300} height={300} />{" "}
         </div>
         <div className="flex flex-col">
-          <h3 className="text-3xl font-semibold text-primary w-60">Unique ID Generation</h3>
+          <h3 className="text-3xl pb-6 md:pb-0 font-semibold text-primary w-60">Unique ID Generation</h3>
           <p className="w-[350px]">
             Generate a unique ID for each user after successful authentication.
           </p>
         </div>
       </div>
 
-      <div className="flex justify-center items-center gap-60">
+      <div className="flex  flex-col gap-10 md:flex-row justify-center items-center md:gap-60">
         <div className="flex flex-col">
-          <h3 className="text-3xl font-semibold text-primary w-60">User-Friendly Dashboard</h3>
+          <h3 className="text-3xl pb-6 md:pb-0 font-semibold text-primary w-60">User-Friendly Dashboard</h3>
           <p className="w-[350px]">
             Provide users with a dashboard to monitor the usage of their unique
             IDs, view records, and manage their identity-related information.
