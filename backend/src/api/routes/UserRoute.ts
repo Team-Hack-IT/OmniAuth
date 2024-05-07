@@ -1,8 +1,8 @@
+import * as UserController from "@/controllers/UserController";
+import * as BaseController from "@/controllers/BaseController";
+import * as fileService from "@/services/FileService";
+import * as blockChainService from "@/services/BlockchainService";
 import userMiddleware from "../middleware/UserMiddleware";
-import * as UserController from "../controller/UserController";
-import * as BaseController from "../controller/BaseController";
-import * as fileService from "../services/FileService";
-import * as blockChainService from "../services/BlockchainService";
 import { Router } from "express";
 
 const router = Router();
@@ -17,7 +17,6 @@ router.post("/api/user/update-email", BaseController.updateEmail);
 router.delete("/api/user/delete", BaseController.del);
 router.post("/api/user/update", UserController.updateUser);
 router.post("/api/user/verify-phone", UserController.verifyPhone);
-router.post("/api/user/verify-id", fileService.verifyId);
 router.get("/api/user/logout-all", BaseController.logoutAll);
 router.get("/api/user/logout", BaseController.logout);
 router.get("/api/user/service/get-all-business", UserController.getAllBusiness);

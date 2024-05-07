@@ -43,6 +43,11 @@ export async function matchId(user: User, file: Buffer) {
         ) {
             throw new BadRequest("User information does not match");
         }
+
+        const expiryDateRegex = /\b\d{2}\/\d{2}\/\d{4}\b/;
+        const expiryDateMatch = text.match(expiryDateRegex);
+        const expiryDate = expiryDateMatch ? expiryDateMatch[0] : null;
+        return expiryDate;
     } catch (error) {
         throw error;
     }

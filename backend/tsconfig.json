@@ -1,5 +1,16 @@
 {
   "compilerOptions": {
+    "baseUrl": "./src",
+    "paths": {
+      "@/controllers/*": ["api/controller/*"],
+      "@/middlewares/*": ["api/middleware/*"],
+      "@/routes/*": ["api/route/*"],
+      "@/services/*": ["api/services/*"],
+      "@/utils/*": ["utils/*"],
+      "@/config/*": ["config/*"],
+      "@/models": ["@types/model.types"],
+
+    },
     /* Visit https://aka.ms/tsconfig to read more about this file */
 
     /* Projects */

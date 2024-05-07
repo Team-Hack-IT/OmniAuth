@@ -1,5 +1,4 @@
 import express, { Request, Response } from "express";
-import cookieParser from "cookie-parser";
 import cors from "cors";
 import dotenv from "dotenv";
 import helmet from "helmet";
@@ -21,7 +20,6 @@ const environment = process.env.NODE_ENV;
 app.use(helmet());
 app.use(express.json({ limit: "10mb" }));
 app.use(express.urlencoded({ extended: true }));
-app.use(cookieParser());
 
 if (environment === "development") {
     const allowedOrigins = process.env.ALLOWED_ORIGINS

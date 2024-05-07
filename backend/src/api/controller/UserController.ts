@@ -1,8 +1,10 @@
-import connectDescope from "../../config/descope.config";
-import supabase from "../../config/db.config";
-import { create, update } from "../../utils/model";
+import connectDescope from "@/config/descope.config";
+import supabase from "@/config/db.config";
+import * as blockchainService from "@/services/BlockchainService";
+import { create, update } from "@/utils/model";
 import { Request, Response, NextFunction } from "express";
-import { BadRequest, ServerError } from "../../utils/error";
+import { BadRequest, ServerError } from "@/utils/error";
+import { User } from "../../@types/model.types";
 
 const requiredAttributes = [
     "firstname",
@@ -95,4 +97,26 @@ const getAllBusiness = async (
     }
 };
 
+const generateUniqueId = async (
+    req: Request,
+    res: Response,
+    next: NextFunction
+) => {
+    try {
+        const user = req.user as User;
+
+        if (user.is_verified) {
+            const id = blockchainService.generateUniqueId();
+            const { error } = await supabase
+                .from("user")
+                .update({ id })
+                .eq("id", user.id);
+
+            if (error) throw new ServerError();
+            return id;
+        }
+    } catch (error) {
+        next(error);
+    }
+};
 export { createUser, updateUser, verifyPhone, getAllBusiness };

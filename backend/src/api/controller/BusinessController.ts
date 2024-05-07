@@ -65,4 +65,10 @@ const updateBusiness = async (
     }
 };
 
+const generateAPIKey = async (
+    req: Request,
+    res: Response,
+    next: NextFunction
+) => {};
+
 export { createBusiness, updateBusiness };
