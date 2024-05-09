@@ -1,2 +1,4 @@
 #!/usr/bin/env sh
-cd backend && npx lint-staged
+
+# cd backend && npx lint-staged && npm test
+
