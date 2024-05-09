@@ -1,55 +1,8 @@
-import supabase from "../../config/db.config";
-import AllowedFileTypes, * as fileService from "../../utils/file";
-import uploadFile from "../middleware/MulterMiddleware";
+import AllowedFileTypes, * as fileService from "@/utils/file";
+import uploadFile from "@/middlewares/MulterMiddleware";
 import { Response, Request, NextFunction } from "express";
-import { compareImages, matchId } from "../../utils/image";
-import { BadRequest, Conflict, NotFound, ServerError } from "../../utils/error";
-import { User } from "../../@types/model.types";
-
-const verifyId = async (req: Request, res: Response, next: NextFunction) => {
-    const user = req.user as User;
-
-    try {
-        const { type } = req.params;
-        const { picture, bucket_id, role, document } = user;
-
-        if (!type || !user || !picture || !bucket_id) throw new BadRequest();
-
-        const parsedDocument = document ? JSON.parse(document.toString()) : {};
-
-        if (!parsedDocument.idCard) throw new NotFound();
-
-        const [idCard, photo] = await Promise.all([
-            fileService.download(parsedDocument.idCard, bucket_id),
-            fileService.download(picture, bucket_id),
-        ]);
-
-        if (!idCard || !photo) throw new NotFound();
-
-        await compareImages(idCard, photo);
-        await matchId(user, idCard);
-        res.status(200).json({ verified: true });
-    } catch (error) {
-        if (user.is_verified) {
-            await updateUserVerificationStatus(user.id, false).catch((err) => {
-                next(err);
-            });
-        }
-        next(error);
-    }
-};
-
-const updateUserVerificationStatus = async (
-    userId: string,
-    isVerified: boolean
-) => {
-    const { error } = await supabase
-        .from("user")
-        .update({ is_verified: isVerified })
-        .eq("id", userId);
-
-    if (error) return Promise.reject(new ServerError());
-};
+import { BadRequest, Conflict, NotFound, ServerError } from "@/utils/error";
+import { User } from "@/models";
 
 const uploadPicture = async (
     req: Request,
@@ -180,7 +133,6 @@ const deletePicture = async (
     }
 };
 export {
-    verifyId,
     uploadPicture,
     uploadDocument,
     downloadFile,

@@ -6,7 +6,10 @@ import { ServerError } from "../../utils/error";
 dotenv.config();
 
 const tronWeb = new TronWeb({
-    fullHost: process.env.CONTRACT_URL,
+    privateKey: process.env.PRIVATE_KEY,
+    fullNode: process.env.FULL_NODE,
+    solidityNode: process.env.SOLIDITY_NODE,
+    eventServer: process.env.EVENT_SERVER,
 });
 
 const contractAddress = process.env.CONTRACT_ADDRESS;
@@ -18,19 +21,7 @@ const contract = tronWeb.contract(ContractABI.abi, contractAddress!);
  * @throws {ServerError} If an error occurs during the registration process.
  */
 export function registerUser(): Promise<object> {
-    return contract.eventListener
-        .registerUser()
-        .send({
-            feeLimit: 1_000_000,
-            callValue: 0,
-            shouldPollResponse: true,
-        })
-        .then((result: object) => {
-            return result;
-        })
-        .catch(() => {
-            throw new ServerError();
-        });
+    return contract.methods.registerUser().send();
 }
 
 /**

@@ -9,9 +9,29 @@ export type Json =
 export type Database = {
     public: {
         Tables: {
+            api: {
+                Row: {
+                    api_key: string;
+                    api_secret: string;
+                    id: string | null;
+                };
+                Insert: {
+                    api_key?: string;
+                    api_secret: string;
+                    id?: string | null;
+                };
+                Update: {
+                    api_key?: string;
+                    api_secret?: string;
+                    id?: string | null;
+                };
+                Relationships: [];
+            };
             business: {
                 Row: {
                     address: string | null;
+                    api_key: string | null;
+                    api_secret: string | null;
                     bucket_id: string | null;
                     created_at: string;
                     description: string | null;
@@ -30,6 +50,8 @@ export type Database = {
                 };
                 Insert: {
                     address?: string | null;
+                    api_key?: string | null;
+                    api_secret?: string | null;
                     bucket_id?: string | null;
                     created_at?: string;
                     description?: string | null;
@@ -48,6 +70,8 @@ export type Database = {
                 };
                 Update: {
                     address?: string | null;
+                    api_key?: string | null;
+                    api_secret?: string | null;
                     bucket_id?: string | null;
                     created_at?: string;
                     description?: string | null;
@@ -69,6 +93,7 @@ export type Database = {
             user: {
                 Row: {
                     address: string | null;
+                    auth: Json | null;
                     birth_date: string | null;
                     bucket_id: string | null;
                     city: string | null;
@@ -80,6 +105,7 @@ export type Database = {
                     history: Json | null;
                     id: string;
                     is_verified: boolean | null;
+                    keep_profile: boolean | null;
                     lastname: string;
                     password: string | null;
                     phone: string | null;
@@ -92,6 +118,7 @@ export type Database = {
                 };
                 Insert: {
                     address?: string | null;
+                    auth?: Json | null;
                     birth_date?: string | null;
                     bucket_id?: string | null;
                     city?: string | null;
@@ -103,6 +130,7 @@ export type Database = {
                     history?: Json | null;
                     id?: string;
                     is_verified?: boolean | null;
+                    keep_profile?: boolean | null;
                     lastname: string;
                     password?: string | null;
                     phone?: string | null;
@@ -115,6 +143,7 @@ export type Database = {
                 };
                 Update: {
                     address?: string | null;
+                    auth?: Json | null;
                     birth_date?: string | null;
                     bucket_id?: string | null;
                     city?: string | null;
@@ -126,6 +155,7 @@ export type Database = {
                     history?: Json | null;
                     id?: string;
                     is_verified?: boolean | null;
+                    keep_profile?: boolean | null;
                     lastname?: string;
                     password?: string | null;
                     phone?: string | null;
